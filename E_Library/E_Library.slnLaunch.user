@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "..\\E_Library.ServerApp\\E_Library.ServerApp.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\ELibrary.Client\\ELibrary.Client.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

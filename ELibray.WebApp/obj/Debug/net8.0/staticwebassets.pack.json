@@ -1,0 +1,441 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\ELibrary.WebApp.bundle.scp.css",
+      "PackagePath": "staticwebassets\\ELibrary.WebApp.7qe1gs6uan.bundle.scp.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\css\\light.css",
+      "PackagePath": "staticwebassets\\css\\light.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\css\\sidebar.css",
+      "PackagePath": "staticwebassets\\css\\sidebar.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-brands-400.ttf",
+      "PackagePath": "staticwebassets\\fonts\\fa-brands-400.ttf"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-brands-400.woff2",
+      "PackagePath": "staticwebassets\\fonts\\fa-brands-400.woff2"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-regular-400 (1).ttf",
+      "PackagePath": "staticwebassets\\fonts\\fa-regular-400 (1).ttf"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-regular-400.ttf",
+      "PackagePath": "staticwebassets\\fonts\\fa-regular-400.ttf"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-regular-400.woff2",
+      "PackagePath": "staticwebassets\\fonts\\fa-regular-400.woff2"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-solid-900.ttf",
+      "PackagePath": "staticwebassets\\fonts\\fa-solid-900.ttf"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\fonts\\fa-solid-900.woff2",
+      "PackagePath": "staticwebassets\\fonts\\fa-solid-900.woff2"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\avatars\\avatar-2.jpg",
+      "PackagePath": "staticwebassets\\img\\avatars\\avatar-2.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\avatars\\avatar-3.jpg",
+      "PackagePath": "staticwebassets\\img\\avatars\\avatar-3.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\avatars\\avatar-4.jpg",
+      "PackagePath": "staticwebassets\\img\\avatars\\avatar-4.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\avatars\\avatar-5.jpg",
+      "PackagePath": "staticwebassets\\img\\avatars\\avatar-5.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\avatars\\avatar.jpg",
+      "PackagePath": "staticwebassets\\img\\avatars\\avatar.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\1984.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\1984.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\chipheo.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\chipheo.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\davinci.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\davinci.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\demen.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\demen.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\harry.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\harry.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\holmes.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\holmes.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\matbiec.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\matbiec.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\mockingbird.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\mockingbird.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\oldman.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\oldman.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\books\\sodo.jpg",
+      "PackagePath": "staticwebassets\\img\\books\\sodo.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\flags\\de.png",
+      "PackagePath": "staticwebassets\\img\\flags\\de.png"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\flags\\es.png",
+      "PackagePath": "staticwebassets\\img\\flags\\es.png"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\flags\\ru.png",
+      "PackagePath": "staticwebassets\\img\\flags\\ru.png"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\flags\\us.png",
+      "PackagePath": "staticwebassets\\img\\flags\\us.png"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\icons\\brand-1.svg",
+      "PackagePath": "staticwebassets\\img\\icons\\brand-1.svg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\icons\\brand-2.svg",
+      "PackagePath": "staticwebassets\\img\\icons\\brand-2.svg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\icons\\brand-3.svg",
+      "PackagePath": "staticwebassets\\img\\icons\\brand-3.svg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\icons\\brand-4.svg",
+      "PackagePath": "staticwebassets\\img\\icons\\brand-4.svg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\icons\\brand-5.svg",
+      "PackagePath": "staticwebassets\\img\\icons\\brand-5.svg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\icons\\icon-48x48.png",
+      "PackagePath": "staticwebassets\\img\\icons\\icon-48x48.png"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\photos\\unsplash-1.jpg",
+      "PackagePath": "staticwebassets\\img\\photos\\unsplash-1.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\photos\\unsplash-2.jpg",
+      "PackagePath": "staticwebassets\\img\\photos\\unsplash-2.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\img\\photos\\unsplash-3.jpg",
+      "PackagePath": "staticwebassets\\img\\photos\\unsplash-3.jpg"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\js\\app.js",
+      "PackagePath": "staticwebassets\\js\\app.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\js\\datatables.js",
+      "PackagePath": "staticwebassets\\js\\datatables.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\js\\fullcalendar.js",
+      "PackagePath": "staticwebassets\\js\\fullcalendar.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\js\\settings.js",
+      "PackagePath": "staticwebassets\\js\\settings.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\js\\site.js",
+      "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "PackagePath": "staticwebassets\\lib\\bootstrap"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\microsoft-signalr\\signalr.js",
+      "PackagePath": "staticwebassets\\lib\\microsoft-signalr\\signalr.js"
+    },
+    {
+      "Id": "D:\\PRN222_FinalProject\\ELibray.WebApp\\wwwroot\\lib\\microsoft-signalr\\signalr.min.js",
+      "PackagePath": "staticwebassets\\lib\\microsoft-signalr\\signalr.min.js"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.ELibrary.WebApp.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.ELibrary.WebApp.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.ELibrary.WebApp.props",
+      "PackagePath": "build\\ELibrary.WebApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.ELibrary.WebApp.props",
+      "PackagePath": "buildMultiTargeting\\ELibrary.WebApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.ELibrary.WebApp.props",
+      "PackagePath": "buildTransitive\\ELibrary.WebApp.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

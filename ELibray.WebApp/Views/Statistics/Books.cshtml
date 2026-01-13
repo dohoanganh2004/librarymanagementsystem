@@ -1,0 +1,245 @@
+@model ELibrary.WebApp.Models.BookStatisticsViewModel
+@{
+    ViewData["Title"] = "Thống kê Sách";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-book mr-2"></i>
+                        Thống kê Sách Chi tiết
+                    </h3>
+                    <div class="card-tools">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="changePeriod('day')">Ngày</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="changePeriod('week')">Tuần</button>
+                            <button type="button" class="btn btn-sm btn-primary active" onclick="changePeriod('month')">Tháng</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="changePeriod('year')">Năm</button>
+                        </div>
+                        <a href="@Url.Action("ExportReport", new { type = "books", period = "month" })" class="btn btn-sm btn-success ml-2">
+                            <i class="fas fa-download"></i> Xuất Excel
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Thống kê tổng quan -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>@Model.TotalBooks</h3>
+                                    <p>Tổng số sách</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>@Model.BooksAdded</h3>
+                                    <p>Sách mới thêm</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>@(Model.TopBorrowedBooks.FirstOrDefault()?.BorrowCount ?? 0)</h3>
+                                    <p>Lượt mượn cao nhất</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3>@Model.BooksByCategory.Count</h3>
+                                    <p>Danh mục</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biểu đồ -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Xu hướng mượn sách</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="borrowingTrendChart" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Sách theo danh mục</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="categoryChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top sách được mượn nhiều -->
+                    <div class="row mt-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Top sách được mượn nhiều nhất</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Ảnh</th>
+                                                    <th>Tên sách</th>
+                                                    <th>Tác giả</th>
+                                                    <th>Danh mục</th>
+                                                    <th>Lượt mượn</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < Model.TopBorrowedBooks.Count; i++)
+                                                {
+                                                    var book = Model.TopBorrowedBooks[i];
+                                                    <tr>
+                                                        <td>@(i + 1)</td>
+                                                        <td>
+                                                            @if (!string.IsNullOrEmpty(book.Image))
+                                                            {
+                                                                <img src="@book.Image" alt="@book.Title" class="img-thumbnail" style="width: 40px; height: 50px;">
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 50px;">
+                                                                    <i class="fas fa-book text-muted"></i>
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                        <td>@book.Title</td>
+                                                        <td>@book.Author</td>
+                                                        <td>@book.Category</td>
+                                                        <td><span class="badge badge-primary">@book.BorrowCount</span></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Top tác giả</h3>
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var author in Model.TopAuthors.Take(10))
+                                    {
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span>@author.AuthorName</span>
+                                            <span class="badge badge-info">@author.TotalBorrows lượt</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let borrowingChart, categoryChart;
+        let currentPeriod = 'month';
+
+        // Khởi tạo biểu đồ
+        $(document).ready(function() {
+            initBorrowingTrendChart();
+            initCategoryChart();
+        });
+
+        function initBorrowingTrendChart() {
+            const ctx = document.getElementById('borrowingTrendChart').getContext('2d');
+            const data = @Html.Raw(Json.Serialize(Model.BorrowingTrend));
+            
+            borrowingChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.label),
+                    datasets: [{
+                        label: 'Lượt mượn',
+                        data: data.map(d => d.value),
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function initCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            const data = @Html.Raw(Json.Serialize(Model.BooksByCategory));
+            
+            categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.categoryName),
+                    datasets: [{
+                        data: data.map(d => d.bookCount),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function changePeriod(period) {
+            currentPeriod = period;
+            $('.btn-group .btn').removeClass('btn-primary active').addClass('btn-outline-primary');
+            $(`button[onclick="changePeriod('${period}')"]`).removeClass('btn-outline-primary').addClass('btn-primary active');
+            
+            // Reload data
+            window.location.href = '@Url.Action("Books")?period=' + period;
+        }
+    </script>
+}

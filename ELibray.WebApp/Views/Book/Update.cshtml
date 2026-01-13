@@ -1,0 +1,216 @@
+﻿@using ELibrary.WebApp.DTO.Request
+@model BookRequestDTO
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0"><i class="fas fa-edit"></i> Chỉnh Sửa Sách: @Model.Title</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Update" method="post" enctype="multipart/form-data">
+                <div 
+asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <input type="hidden" asp-for="BookId" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-bold">Tên Sách <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" placeholder="Nhập tên sách..." />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="AuthorId" class="form-label fw-bold">Tác Giả</label>
+                                <select asp-for="AuthorId" class="form-select">
+                                    <option value="">-- Chọn Tác Giả --</option>
+                                    @foreach (var author in ViewBag.Authors)
+                                    {
+                                        @if (author.AuthorId == Model.AuthorId)
+                                        {
+                                            <option value="@author.AuthorId" selected>@author.AuthorName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@author.AuthorId">@author.AuthorName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CategoryId" class="form-label fw-bold">Danh Mục</label>
+                                <select asp-for="CategoryId" class="form-select">
+                                    <option value="">-- Chọn Danh Mục --</option>
+                                    @foreach (var cat in ViewBag.Categories)
+                                    {
+                                        @if (cat.CategoryId == Model.CategoryId)
+                                        {
+                                            <option value="@cat.CategoryId" selected>@cat.CategoryName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@cat.CategoryId">@cat.CategoryName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PublisherId" class="form-label fw-bold">Nhà Xuất Bản</label>
+                            <select asp-for="PublisherId" class="form-select">
+                                <option value="">-- Chọn NXB --</option>
+                                @foreach (var pub in ViewBag.Publishers)
+                                {
+                                    @if (pub.PublisherId == Model.PublisherId)
+                                    {
+                                        <option value="@pub.PublisherId" selected>@pub.PublisherName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@pub.PublisherId">@pub.PublisherName</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PublicationYear" class="form-label fw-bold">Năm Xuất Bản</label>
+                                <input asp-for="PublicationYear" class="form-control" type="number" min="1900" max="@DateTime.Now.Year" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Language" class="form-label fw-bold">Ngôn Ngữ</label>
+                                <input asp-for="Language" class="form-control" placeholder="VN, EN..." />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ảnh Bìa</label>
+
+                            <!-- Upload File -->
+                            <input asp-for="ImageFile" type="file" class="form-control mb-2" accept="image/*" id="fileInput" />
+                            <div class="form-text">Kích thước tối đa: 50MB. Định dạng: JPG, PNG, GIF, BMP, WEBP</div>
+
+                            <!-- Hoặc nhập URL -->
+                            <input asp-for="Image" class="form-control" placeholder="Hoặc nhập URL ảnh..." id="imgUrlInput" />
+
+                            <div class="mt-2 text-center border p-2 bg-light" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                                <img id="imgPreview" src="@Model.Image" alt="Preview" style="max-height: 100%; display: @(string.IsNullOrEmpty(Model.Image) ? "none" : "block");" />
+                                <span id="imgPlaceholder" class="text-muted" style="display: @(string.IsNullOrEmpty(Model.Image) ? "block" : "none");">Preview Ảnh</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PageCount" class="form-label fw-bold">Số Trang</label>
+                                <input asp-for="PageCount" class="form-control" type="number" min="1" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Quantity" class="form-label fw-bold">Số Lượng</label>
+                                <input asp-for="Quantity" class="form-control" type="number" min="0" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label asp-for="Description" class="form-label fw-bold">Mô Tả</label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <div class="card-footer text-end bg-white">
+                    <a asp-action="List" class="btn btn-secondary me-2">Hủy Bỏ</a>
+                    <button type="submit" class="btn btn-warning"><i class="fas fa-sync-alt"></i> Cập Nhật Sách</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        // Preview file upload with validation
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            var img = document.getElementById('imgPreview');
+            var placeholder = document.getElementById('imgPlaceholder');
+
+            if (file) {
+                // Validate file size (50MB)
+                const maxSize = 50 * 1024 * 1024; // 50MB
+                if (file.size > maxSize) {
+                    alert('File quá lớn! Kích thước tối đa cho phép: 50MB');
+                    e.target.value = '';
+                    img.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    return;
+                }
+
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Định dạng file không được hỗ trợ! Chỉ chấp nhận: JPG, PNG, GIF, BMP, WEBP');
+                    e.target.value = '';
+                    img.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function (evt) {
+                    img.src = evt.target.result;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                img.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        });
+
+        // Preview khi nhập URL
+        document.getElementById('imgUrlInput').addEventListener('input', function (e) {
+            var url = e.target.value;
+            var img = document.getElementById('imgPreview');
+            var placeholder = document.getElementById('imgPlaceholder');
+
+            if (url) {
+                img.src = url;
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else if (!document.getElementById('fileInput').files.length) {
+                img.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        });
+
+        // Thiết lập trạng thái ban đầu
+        document.addEventListener('DOMContentLoaded', function () {
+            var imgUrlInput = document.getElementById('imgUrlInput');
+            var imgPreview = document.getElementById('imgPreview');
+            var placeholder = document.getElementById('imgPlaceholder');
+
+            if (imgUrlInput.value && imgUrlInput.value.trim() !== '') {
+                imgPreview.src = imgUrlInput.value;
+                imgPreview.style.display = 'block';
+                placeholder.style.display = 'none';
+            }
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

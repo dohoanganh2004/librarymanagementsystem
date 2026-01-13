@@ -1,0 +1,161 @@
+﻿@using Microsoft.AspNetCore.Http
+
+<!-- Top Navigation -->
+<nav class="navbar navbar-expand navbar-light navbar-bg">
+    <div class="container-fluid">
+        <!-- Sidebar Toggle -->
+        <a class="sidebar-toggle js-sidebar-toggle">
+            <i class="hamburger align-self-center"></i>
+        </a>
+
+        <!-- Navigation Menu -->
+        <div class="navbar-nav me-auto d-flex flex-row">
+            <a class="nav-link text-dark fw-bold me-3 header-nav-link" href="@Url.Action("Index", "Home")">
+                <i class="fas fa-home me-1"></i> Trang chủ
+            </a>
+            <a class="nav-link text-dark fw-bold me-3 header-nav-link" href="@Url.Action("All", "Book")">
+                <i class="fas fa-book me-1"></i> Danh Sách sách
+            </a>
+        </div>
+
+        <!-- Search (optional) -->
+        <div class="d-none d-sm-inline-block">
+            <div class="input-group input-group-navbar">
+                <input type="text" class="form-control" placeholder="Tìm kiếm..." aria-label="Search">
+                <button class="btn" type="button">
+                    <i class="align-middle" data-feather="search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right side navbar -->
+        <div class="navbar-collapse collapse">
+            <ul class="navbar-nav navbar-align">
+
+            @{
+                var employeeName = Context.Session.GetString("employeeName");
+                var readerName = Context.Session.GetString("readerName");
+                var displayName = employeeName ?? readerName ?? "Guest";
+            }
+
+
+
+                <!-- Notifications -->
+                <li class="nav-item dropdown">
+                    <a class="nav-icon dropdown-toggle" href="#" id="alertsDropdown" data-bs-toggle="dropdown">
+                        <div class="position-relative">
+                            <i class="align-middle" data-feather="bell"></i>
+                            <span id="notifyBadge" class="indicator d-none">0</span>
+                        </div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end py-0" aria-labelledby="alertsDropdown">
+                        <div class="dropdown-menu-header d-flex justify-content-between align-items-center">
+                            <span>Thông báo</span>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="markAllAsRead()" title="Đánh dấu tất cả đã đọc">
+                                    <i class="fas fa-check-double"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="clearAllNotifications()" title="Xóa tất cả">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="list-group" id="notificationList" style="max-height: 400px; overflow-y: auto;">
+                            <div class="list-group-item">
+                                <div class="text-muted small mt-1">Chưa có thông báo mới</div>
+                            </div>
+                        </div>
+                        <div class="dropdown-menu-footer text-center">
+                            <small class="text-muted">Click vào thông báo để đánh dấu đã đọc</small>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- User Profile -->
+                <li class="nav-item dropdown">
+                    <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+                        <i class="align-middle" data-feather="settings"></i>
+                    </a>
+
+                    <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+                        <img src="~/img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="@displayName" />
+                        <span class="text-dark">@displayName</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a class="dropdown-item" href="/Profile/ReaderProfile">
+                            <i class="align-middle me-1" data-feather="user"></i> Thông tin cá nhân
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="dropdown-item">
+                                <i class="align-middle me-1" data-feather="log-out"></i> Đăng xuất
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .header-nav-link {
+        position: relative;
+        transition: all 0.3s ease;
+        padding: 8px 16px !important;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+    
+    .header-nav-link:hover {
+        background-color: rgba(102, 126, 234, 0.1);
+        color: #667eea !important;
+        transform: translateY(-1px);
+    }
+    
+    .header-nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+    
+    .header-nav-link:hover::after {
+        width: 80%;
+    }
+    
+    .header-nav-link.active {
+        background-color: rgba(102, 126, 234, 0.15);
+        color: #667eea !important;
+    }
+    
+    .header-nav-link.active::after {
+        width: 80%;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight active menu based on current URL
+        const currentPath = window.location.pathname.toLowerCase();
+        const navLinks = document.querySelectorAll('.header-nav-link');
+        
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href').toLowerCase();
+            
+            // Check if current path matches the link
+            if (currentPath === href || 
+                (currentPath === '/' && href.includes('/home')) ||
+                (currentPath.includes('/book') && href.includes('/book')) ||
+                (currentPath.includes('/home') && href.includes('/home'))) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>

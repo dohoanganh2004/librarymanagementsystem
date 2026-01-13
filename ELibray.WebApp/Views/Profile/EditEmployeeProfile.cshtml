@@ -1,0 +1,416 @@
+@using ELibrary.WebApp.DTO.Request
+@model EmployeeRequestDTO
+@{
+    ViewData["Title"] = "Chỉnh sửa hồ sơ nhân viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Profile" asp-action="EmployeeProfile" class="text-decoration-none">
+                            <i class="fas fa-user me-1"></i>Hồ sơ nhân viên
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Chỉnh sửa hồ sơ nhân viên
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Thành công!</strong> @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="EditEmployeeProfile" asp-controller="Profile" method="post" enctype="multipart/form-data" id="editProfileForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <input type="hidden" asp-for="EmployeeId" />
+
+                        <!-- Avatar Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="text-center">
+                                    <div class="mb-3">
+                                        @if (!string.IsNullOrEmpty(Model?.Avatar))
+                                        {
+                                            <img src="@Model.Avatar" class="rounded-circle" width="120" height="120" alt="Avatar" id="avatarPreview">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold mx-auto" style="width: 120px; height: 120px; font-size: 2.5rem;" id="avatarPlaceholder">
+                                                @(Model?.FirstName?.Substring(0, 1).ToUpper())@(Model?.LastName?.Substring(0, 1).ToUpper())
+                                            </div>
+                                        }
+                                    </div>
+                                    <div>
+                                        <input type="file" class="form-control d-none" asp-for="AvatarFile" accept="image/*" id="avatarInput">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('avatarInput').click()">
+                                            <i class="fas fa-camera me-1"></i>Đổi ảnh đại diện
+                                        </button>
+                                        <input type="hidden" asp-for="Avatar" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2 text-muted"></i>Họ <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="FirstName" class="form-control" placeholder="Nhập họ..." />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2 text-muted"></i>Tên <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="LastName" class="form-control" placeholder="Nhập tên..." />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-2 text-muted"></i>Email <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Email" class="form-control" placeholder="Nhập email..." />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label fw-bold">
+                                    <i class="fas fa-phone me-2 text-muted"></i>Số điện thoại
+                                </label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Nhập số điện thoại..." />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DoB" class="form-label fw-bold">
+                                    <i class="fas fa-calendar me-2 text-muted"></i>Ngày sinh
+                                </label>
+                                <input asp-for="DoB" type="date" class="form-control" />
+                                <span asp-validation-for="DoB" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Age" class="form-label fw-bold">
+                                    <i class="fas fa-birthday-cake me-2 text-muted"></i>Tuổi
+                                </label>
+                                <input asp-for="Age" type="number" class="form-control" placeholder="Tuổi sẽ được tính tự động..." readonly />
+                                <span asp-validation-for="Age" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Work Information -->
+                        <hr class="my-4">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-briefcase me-2"></i>Thông tin công việc
+                        </h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="RoleId" class="form-label fw-bold">
+                                    <i class="fas fa-user-tag me-2 text-muted"></i>Chức vụ
+                                </label>
+                                <select asp-for="RoleId" class="form-select">
+                                    <option value="">-- Chọn chức vụ --</option>
+                                    @if (ViewBag.Roles != null)
+                                    {
+                                        @foreach (var role in ViewBag.Roles)
+                                        {
+                                            <option value="@role.RoleId">@role.RoleName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="RoleId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="StartDate" class="form-label fw-bold">
+                                    <i class="fas fa-calendar-plus me-2 text-muted"></i>Ngày bắt đầu làm việc
+                                </label>
+                                <input asp-for="StartDate" type="date" class="form-control" />
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Status" class="form-label fw-bold">
+                                    <i class="fas fa-toggle-on me-2 text-muted"></i>Trạng thái
+                                </label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="true">Đang làm việc</option>
+                                    <option value="false">Ngừng làm việc</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Security Section -->
+                        <hr class="my-4">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-shield-alt me-2"></i>Bảo mật
+                        </h5>
+
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Để đổi mật khẩu, vui lòng sử dụng chức năng "Đổi mật khẩu" riêng biệt.
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <a asp-controller="Profile" asp-action="EmployeeProfile" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                                </a>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-warning me-2" onclick="resetForm()">
+                                    <i class="fas fa-undo me-2"></i>Đặt lại
+                                </button>
+                                <button type="submit" class="btn btn-primary" id="submitBtn">
+                                    <i class="fas fa-save me-2"></i>Lưu thay đổi
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Actions -->
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card border-warning">
+                        <div class="card-body text-center">
+                            <i class="fas fa-key fa-2x text-warning mb-2"></i>
+                            <h6>Đổi mật khẩu</h6>
+                            <p class="text-muted small">Cập nhật mật khẩu để bảo mật tài khoản</p>
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                Đổi mật khẩu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-info">
+                        <div class="card-body text-center">
+                            <i class="fas fa-download fa-2x text-info mb-2"></i>
+                            <h6>Tải hồ sơ</h6>
+                            <p class="text-muted small">Tải xuống thông tin hồ sơ dạng PDF</p>
+                            <button class="btn btn-info btn-sm" onclick="downloadProfile()">
+                                Tải xuống
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Change Password Modal -->
+@await Html.PartialAsync("_ChangePasswordModal")
+@section Styles {
+    <style>
+        .card {
+            border-radius: 10px;
+        }
+        
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: pointer;
+        }
+        
+        .avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Avatar preview functionality
+        document.getElementById('avatarInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Chỉ chấp nhận file ảnh (JPG, PNG, GIF)');
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File ảnh không được vượt quá 5MB');
+                    return;
+                }
+                
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarPreview = document.getElementById('avatarPreview');
+                    const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+                    
+                    if (avatarPreview) {
+                        avatarPreview.src = e.target.result;
+                    } else if (avatarPlaceholder) {
+                        // Replace placeholder with image
+                        avatarPlaceholder.outerHTML = `<img src="${e.target.result}" class="rounded-circle" width="120" height="120" alt="Avatar" id="avatarPreview">`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Auto-calculate age from date of birth
+        document.querySelector('input[name="DoB"]').addEventListener('change', function() {
+            const dob = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            
+            if (age >= 0 && age <= 100) {
+                document.querySelector('input[name="Age"]').value = age;
+            }
+        });
+        
+        // Form validation
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            const firstName = document.querySelector('input[name="FirstName"]').value.trim();
+            const lastName = document.querySelector('input[name="LastName"]').value.trim();
+            const email = document.querySelector('input[name="Email"]').value.trim();
+            
+            if (!firstName || !lastName || !email) {
+                e.preventDefault();
+                alert('Vui lòng điền đầy đủ thông tin bắt buộc (Họ, Tên, Email)');
+                return;
+            }
+            
+            // Email validation
+           const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Vui lòng nhập email hợp lệ');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang lưu...';
+            submitBtn.disabled = true;
+            
+            // Reset button after 5 seconds (in case of slow response)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 5000);
+        });
+        
+        // Reset form function
+        function resetForm() {
+            if (confirm('Bạn có chắc chắn muốn đặt lại tất cả thay đổi?')) {
+                document.getElementById('editProfileForm').reset();
+                
+                // Reset avatar preview
+                const avatarPreview = document.getElementById('avatarPreview');
+                if (avatarPreview) {
+                    avatarPreview.src = '@(Model?.Avatar ?? "")';
+                }
+            }
+        }
+        
+        // Download profile function
+        function downloadProfile() {
+            alert('Tải hồ sơ nhân viên');
+            // Implement download logic
+        }
+        
+        // Phone number formatting
+        document.querySelector('input[name="PhoneNumber"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+            
+            // Format as Vietnamese phone number
+            if (value.length >= 10) {
+                value = value.substring(0, 10);
+                value = value.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3');
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Auto-hide success alerts
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-success');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+        
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

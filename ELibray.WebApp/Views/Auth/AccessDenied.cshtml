@@ -1,0 +1,55 @@
+﻿@{
+ 
+    ViewData["Title"] = "Truy cập bị từ chối";
+
+   
+   
+}
+
+<div class="container text-center py-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h1 class="display-1 text-danger">403</h1>
+
+            <h2 class="display-4 mb-3">🚫 Truy cập bị từ chối (Access Denied)</h2>
+
+            <p class="lead">
+                Rất tiếc, bạn không có quyền truy cập vào tài nguyên này.
+                Tài khoản của bạn không được cấp phép để thực hiện hành động này.
+            </p>
+
+            <hr class="my-4">
+
+            <div class="alert alert-warning" role="alert">
+                <strong>Bạn cần làm gì tiếp theo?</strong>
+                <ul class="list-unstyled mt-2">
+                    <li>
+                        📧 Liên hệ với quản trị viên nếu bạn tin rằng đây là một lỗi.
+                    </li>
+                    <li>
+                        🔄 Đảm bảo bạn đã đăng nhập bằng tài khoản có quyền truy cập.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mt-5">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home me-2"></i> Quay lại Trang Chủ
+                </a>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <a asp-area="Identity" asp-page="/Account/Logout" class="btn btn-outline-secondary btn-lg ms-3">
+                        Đăng Xuất
+                    </a>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary btn-lg ms-3">
+                        Đăng Nhập Lại
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -144,6 +144,86 @@ CREATE TABLE AuditLog (
     FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID)
 );
 
+-- ==========================================
+-- 🔹 INSERT DATA FOR eLibrary DATABASE
+-- ==========================================
+
+-- 1️⃣ Permission
+INSERT INTO Permission (Link, Description) VALUES
+('/dashboard', N'Truy cập trang tổng quan'),
+('/books', N'Xem danh sách sách'),
+('/books/add', N'Thêm sách mới'),
+('/books/edit', N'Chỉnh sửa thông tin sách'),
+('/books/delete', N'Xóa sách'),
+('/readers', N'Xem danh sách độc giả'),
+('/employees', N'Quản lý nhân viên'),
+('/checkout', N'Quản lý mượn/trả sách'),
+('/fines', N'Quản lý tiền phạt'),
+('/logs', N'Xem nhật ký hệ thống');
+
+-- 2️⃣ Role
+INSERT INTO Role (RoleName) VALUES
+('Admin'),
+('Librarian'),
+('Staff'),
+('Guest');
+
+
+
+
+
+-- 7️⃣ Publisher
+INSERT INTO Publisher (PublisherName, [Address]) VALUES
+(N'NXB Trẻ', N'HCM'),
+(N'NXB Kim Đồng', N'Hà Nội'),
+(N'NXB Lao Động', N'Hà Nội'),
+(N'NXB Văn Học', N'HCM'),
+(N'NXB Giáo Dục', N'Hà Nội'),
+(N'NXB Khoa Học', N'HCM'),
+(N'NXB Thanh Niên', N'Hà Nội'),
+(N'NXB Hội Nhà Văn', N'HCM'),
+(N'NXB Tổng Hợp', N'HCM'),
+(N'NXB Văn Lang', N'Hà Nội');
+
+-- 8️⃣ Author
+INSERT INTO Author (AuthorName) VALUES
+(N'Nguyễn Nhật Ánh'),
+(N'Tô Hoài'),
+(N'Nam Cao'),
+(N'Vũ Trọng Phụng'),
+(N'Arthur Conan Doyle'),
+(N'J.K. Rowling'),
+(N'George Orwell'),
+(N'Harper Lee'),
+(N'Dan Brown'),
+(N'Ernest Hemingway');
+
+-- 9️⃣ Category
+INSERT INTO Category (CategoryName) VALUES
+(N'Truyện thiếu nhi'),
+(N'Truyện ngắn'),
+(N'Tiểu thuyết'),
+(N'Truyện trinh thám'),
+(N'Khoa học'),
+(N'Giáo dục'),
+(N'Lịch sử'),
+(N'Tâm lý'),
+(N'Chính trị'),
+(N'Văn học nước ngoài');
+
+-- 🔟 Book
+INSERT INTO Book (Title, PublicationYear, PublisherID, CategoryID, AuthorID, Image, [Description], PageCount, [Language], Quantity)
+VALUES
+(N'Mắt Biếc', 1990, 1, 3, 1, 'matbiec.jpg', N'Tiểu thuyết tuổi học trò', 250, N'Tiếng Việt', 10),
+(N'Dế Mèn Phiêu Lưu Ký', 1941, 2, 1, 2, 'demen.jpg', N'Truyện thiếu nhi nổi tiếng', 200, N'Tiếng Việt', 8),
+(N'Chí Phèo', 1941, 3, 2, 3, 'chipheo.jpg', N'Truyện hiện thực phê phán', 180, N'Tiếng Việt', 6),
+(N'Số Đỏ', 1936, 4, 2, 4, 'sodo.jpg', N'Truyện châm biếm nổi tiếng', 220, N'Tiếng Việt', 5),
+(N'Sherlock Holmes', 1892, 5, 4, 5, 'holmes.jpg', N'Truyện trinh thám kinh điển', 320, N'English', 7),
+(N'Harry Potter', 1997, 5, 3, 6, 'harry.jpg', N'Tiểu thuyết kỳ ảo', 400, N'English', 10),
+(N'1984', 1949, 6, 10, 7, '1984.jpg', N'Tiểu thuyết phản địa đàng', 300, N'English', 6),
+(N'To Kill a Mockingbird', 1960, 7, 10, 8, 'mockingbird.jpg', N'Tác phẩm nổi tiếng về nhân quyền', 280, N'English', 5),
+(N'Da Vinci Code', 2003, 8, 4, 9, 'davinci.jpg', N'Truyện trinh thám nổi tiếng', 350, N'English', 9),
+(N'Old Man and The Sea', 1952, 9, 10, 10, 'oldman.jpg', N'Tiểu thuyết kinh điển', 200, N'English', 8);
 
 
 

@@ -1,0 +1,241 @@
+@model ELibrary.WebApp.Models.UserStatisticsViewModel
+@{
+    ViewData["Title"] = "Thống kê Người dùng";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users mr-2"></i>
+                        Thống kê Người dùng Chi tiết
+                    </h3>
+                    <div class="card-tools">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="changePeriod('day')">Ngày</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="changePeriod('week')">Tuần</button>
+                            <button type="button" class="btn btn-sm btn-primary active" onclick="changePeriod('month')">Tháng</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="changePeriod('year')">Năm</button>
+                        </div>
+                        <a href="@Url.Action("ExportReport", new { type = "users", period = "month" })" class="btn btn-sm btn-success ml-2">
+                            <i class="fas fa-download"></i> Xuất Excel
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Thống kê tổng quan -->
+                    <div class="row mb-4">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>@Model.TotalReaders</h3>
+                                    <p>Tổng độc giả</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>@Model.NewRegistrations</h3>
+                                    <p>Đăng ký mới</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>@Model.ActiveUsers</h3>
+                                    <p>Đang hoạt động</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3>@Model.InactiveUsers</h3>
+                                    <p>Không hoạt động</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-user-times"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biểu đồ -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Xu hướng đăng ký</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="registrationTrendChart" height="100"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Phân bố theo độ tuổi</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="ageChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top độc giả -->
+                    <div class="row mt-4">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Top độc giả tích cực nhất</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Họ tên</th>
+                                                    <th>Email</th>
+                                                    <th>Số lần mượn</th>
+                                                    <th>Lần mượn cuối</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < Model.TopReaders.Count; i++)
+                                                {
+                                                    var reader = Model.TopReaders[i];
+                                                    <tr>
+                                                        <td>@(i + 1)</td>
+                                                        <td>@reader.FullName</td>
+                                                        <td>@reader.Email</td>
+                                                        <td><span class="badge badge-primary">@reader.BorrowCount</span></td>
+                                                        <td>@reader.LastBorrow.ToString("dd/MM/yyyy")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Thống kê theo độ tuổi</h3>
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var ageGroup in Model.UsersByAge)
+                                    {
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between">
+                                                <span>@ageGroup.AgeGroup</span>
+                                                <span>@ageGroup.UserCount người (@ageGroup.Percentage.ToString("F1")%)</span>
+                                            </div>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar" role="progressbar" style="width: @ageGroup.Percentage%"></div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let registrationChart, ageChart;
+        let currentPeriod = 'month';
+
+        // Khởi tạo biểu đồ
+        $(document).ready(function() {
+            initRegistrationTrendChart();
+            initAgeChart();
+        });
+
+        function initRegistrationTrendChart() {
+            const ctx = document.getElementById('registrationTrendChart').getContext('2d');
+            const data = @Html.Raw(Json.Serialize(Model.RegistrationTrend));
+            
+            registrationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.label),
+                    datasets: [{
+                        label: 'Đăng ký mới',
+                        data: data.map(d => d.value),
+                        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function initAgeChart() {
+            const ctx = document.getElementById('ageChart').getContext('2d');
+            const data = @Html.Raw(Json.Serialize(Model.UsersByAge));
+            
+            ageChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(d => d.ageGroup),
+                    datasets: [{
+                        data: data.map(d => d.userCount),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function changePeriod(period) {
+            currentPeriod = period;
+            $('.btn-group .btn').removeClass('btn-primary active').addClass('btn-outline-primary');
+            $(`button[onclick="changePeriod('${period}')"]`).removeClass('btn-outline-primary').addClass('btn-primary active');
+            
+            // Reload data
+            window.location.href = '@Url.Action("Users")?period=' + period;
+        }
+    </script>
+}

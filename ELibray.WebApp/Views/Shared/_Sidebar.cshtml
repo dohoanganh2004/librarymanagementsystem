@@ -1,0 +1,241 @@
+@using Microsoft.AspNetCore.Http
+@using ELibrary.WebApp.Helpers
+@inject E_Library.Models.ElibraryContext DbContext
+
+@{
+    var employeeId = Context.Session.GetInt32("employeeId");
+    var readerId = Context.Session.GetInt32("readerId");
+    var userRole = employeeId.HasValue ? await RoleHelper.GetUserRoleAsync(Context, DbContext) : null;
+    
+    var isAdmin = RoleHelper.IsAdmin(userRole);
+    var isLibrarian = RoleHelper.IsLibrarian(userRole);
+    var isEmployee = RoleHelper.IsEmployee(userRole);
+    var canManageBooks = RoleHelper.CanManageBooks(userRole);
+    var canManageReservations = RoleHelper.CanManageReservations(userRole);
+    var canManageCheckouts = RoleHelper.CanManageCheckouts(userRole);
+    var canManageReaders = RoleHelper.CanManageReaders(userRole);
+    var canManageEmployees = RoleHelper.CanManageEmployees(userRole);
+    var canViewStatistics = RoleHelper.CanViewStatistics(userRole);
+    var canExportData = RoleHelper.CanExportData(userRole);
+}
+
+<!-- Sidebar -->
+<nav id="sidebar" class="sidebar js-sidebar">
+    <div class="sidebar-content js-simplebar">
+        <!-- Sidebar Brand -->
+        <a class="sidebar-brand" href="/Home/Index">
+            <span class="align-middle">ELibrary</span>
+        </a>
+
+        <!-- User Role Badge -->
+        @if (employeeId.HasValue && !string.IsNullOrEmpty(userRole))
+        {
+            <div class="sidebar-user">
+                <div class="d-flex justify-content-center mb-3">
+                    <span class="badge @(isAdmin ? "bg-danger" : isLibrarian ? "bg-primary" : "bg-secondary") fs-6">
+                        <i class="fas fa-@(isAdmin ? "crown" : isLibrarian ? "book" : "user") me-1"></i>
+                        @userRole
+                    </span>
+                </div>
+            </div>
+        }
+
+        <!-- Sidebar Navigation -->
+        <ul class="sidebar-nav">
+            <!-- Dashboard -->
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="/Home/Index">
+                    <i class="align-middle" data-feather="home"></i>
+                    <span class="align-middle">Trang chủ</span>
+                </a>
+            </li>
+
+            <!-- Books Section -->
+            <li class="sidebar-header">Quản lý sách</li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="/Book/All">
+                    <i class="align-middle" data-feather="book-open"></i>
+                    <span class="align-middle">Danh sách sách</span>
+                </a>
+            </li>
+
+            @if (canManageBooks)
+            {
+                <!-- Book Management - Admin & Librarian -->
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Book/List">
+                        <i class="align-middle" data-feather="list"></i>
+                        <span class="align-middle">Quản lý sách</span>
+                    </a>
+                </li>
+
+                
+            }
+
+            <!-- Library Management -->
+            <li class="sidebar-header">Thư viện</li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="/Reservation/List">
+                    <i class="align-middle" data-feather="bookmark"></i>
+                    <span class="align-middle">Yêu cầu đặt sách</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="/Checkout/MyCheckouts">
+                    <i class="align-middle" data-feather="book-reader"></i>
+                    <span class="align-middle">Sách đã mượn</span>
+                </a>
+            </li>
+
+            @if (canManageCheckouts)
+            {
+                <!-- Checkout Management - Admin & Librarian -->
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Checkout/All">
+                        <i class="align-middle" data-feather="clipboard"></i>
+                        <span class="align-middle">Quản lý mượn trả</span>
+                    </a>
+                </li>
+            }
+
+            @if (canManageReaders || canManageEmployees)
+            {
+                <!-- User Management -->
+                <li class="sidebar-header">Quản lý người dùng</li>
+
+                @if (canManageReaders)
+                {
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="/Reader/All">
+                            <i class="align-middle" data-feather="users"></i>
+                            <span class="align-middle">Quản lý độc giả</span>
+                        </a>
+                    </li>
+                }
+
+                @if (canManageEmployees)
+                {
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="/Employee/All">
+                            <i class="align-middle" data-feather="user-check"></i>
+                            <span class="align-middle">Quản lý nhân viên</span>
+                        </a>
+                    </li>
+                }
+            }
+
+            @if (canViewStatistics)
+            {
+                <!-- Statistics & Reports - Admin & Librarian -->
+                <li class="sidebar-header">Thống kê & Báo cáo</li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Statistics/Dashboard">
+                        <i class="align-middle" data-feather="bar-chart-2"></i>
+                        <span class="align-middle">Dashboard</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Statistics/Books">
+                        <i class="align-middle" data-feather="book-open"></i>
+                        <span class="align-middle">Thống kê sách</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Statistics/Users">
+                        <i class="align-middle" data-feather="users"></i>
+                        <span class="align-middle">Thống kê người dùng</span>
+                    </a>
+                </li>
+
+                @if (canExportData)
+                {
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="/Book/ExportExcel">
+                            <i class="align-middle" data-feather="download"></i>
+                            <span class="align-middle">Xuất Excel</span>
+                        </a>
+                    </li>
+                }
+            }
+
+            @if (isAdmin)
+            {
+                <!-- Admin Only -->
+                <li class="sidebar-header">Quản trị hệ thống</li>
+                
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Admin/Settings">
+                        <i class="align-middle" data-feather="settings"></i>
+                        <span class="align-middle">Cài đặt hệ thống</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Admin/Roles">
+                        <i class="align-middle" data-feather="shield"></i>
+                        <span class="align-middle">Quản lý quyền</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/AuditLog">
+                        <i class="align-middle" data-feather="activity"></i>
+                        <span class="align-middle">Nhật ký hệ thống</span>
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Permission">
+                        <i class="align-middle" data-feather="shield"></i>
+                        <span class="align-middle">Phân quyền nâng cao</span>
+                    </a>
+                </li>
+            }
+
+            <!-- Profile -->
+            <li class="sidebar-header">Cá nhân</li>
+
+            @if (employeeId.HasValue)
+            {
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Profile/EmployeeProfile">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Hồ sơ nhân viên</span>
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="sidebar-item">
+                    <a class="sidebar-link" href="/Profile/ReaderProfile">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Thông tin cá nhân</span>
+                    </a>
+                </li>
+            }
+
+            <li class="sidebar-item">
+                <a class="sidebar-link" href="/Auth/ChangePassword">
+                    <i class="align-middle" data-feather="key"></i>
+                    <span class="align-middle">Đổi mật khẩu</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="sidebar-link btn btn-link text-start w-100 border-0 p-0" style="color: inherit;">
+                        <i class="align-middle" data-feather="log-out"></i>
+                        <span class="align-middle">Đăng xuất</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,90 @@
+﻿@using ELibrary.WebApp.DTO.Response
+@model EmployeeResponseDTO
+
+
+@{
+    ViewData["Title"] = "Employee Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@await Html.PartialAsync("_Header")
+
+
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center font-weight-light my-2">Chi Tiết Nhân Viên</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @* Cột 1: Avatar và Tên *@
+                        <div class="col-md-4 text-center">
+                            @if (!string.IsNullOrEmpty(Model.Avatar))
+                            {
+                                <img src="@Model.Avatar" class="img-fluid rounded-circle mb-3" alt="Employee Avatar" style="width: 150px; height: 150px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded-circle d-inline-block mb-3" style="width: 150px; height: 150px; line-height: 150px; font-size: 3rem;">
+                                    <i class="bi bi-person-fill"></i> 
+                                </div>
+                            }
+                            <h4 class="mt-2">@Model.FirstName @Model.LastName</h4>
+                            <p class="text-muted">@Model.RoleName</p>
+                        </div>
+
+                        @* Cột 2: Thông tin chi tiết *@
+                        <div class="col-md-8">
+                            <h5 class="mb-3 text-primary">Thông Tin Cá Nhân</h5>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Mã NV:</div>
+                                <div class="col-sm-8">@Model.EmployeeId</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Ngày Sinh:</div>
+                                <div class="col-sm-8">@(Model.DoB.HasValue ? Model.DoB.Value.ToString("dd/MM/yyyy") : "N/A")</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Tuổi:</div>
+                                <div class="col-sm-8">@(Model.Age.HasValue ? Model.Age.ToString() : "N/A")</div>
+                            </div>
+
+                            <h5 class="mt-4 mb-3 text-primary">Thông Tin Liên Hệ & Công Việc</h5>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Email:</div>
+                                <div class="col-sm-8">@Model.Email</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Điện Thoại:</div>
+                                <div class="col-sm-8">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Ngày Bắt Đầu:</div>
+                                <div class="col-sm-8">@Model.StartDate.ToString("dd/MM/yyyy")</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Trạng Thái:</div>
+                                <div class="col-sm-8">
+                                    @(Model.Status.HasValue ? (Model.Status.Value ? "Đang làm việc" : "Đã nghỉ việc") : "Không xác định")
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-sm-4 font-weight-bold">Quyền Hạn:</div>
+                                <div class="col-sm-8">@Model.RoleName</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="#" class="btn btn-warning"><i class="bi bi-pencil-square"></i> Chỉnh Sửa</a>
+                    <a href="#" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Quay Lại Danh Sách</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")

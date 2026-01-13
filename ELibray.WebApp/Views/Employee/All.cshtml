@@ -1,0 +1,394 @@
+﻿@using ELibrary.WebApp.DTO.Response
+@using ELibrary.WebApp.Helpers
+@inject E_Library.Models.ElibraryContext DbContext
+@model List<EmployeeResponseDTO>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    ViewData["Title"] = "Quản Lý Nhân Viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Lấy thông tin người dùng và vai trò
+    var employeeId = Context.Session.GetInt32("employeeId");
+    var userRole = employeeId.HasValue ? await RoleHelper.GetUserRoleAsync(Context, DbContext) : null;
+    var isAdmin = RoleHelper.IsAdmin(userRole);
+    var canManageEmployees = RoleHelper.CanManageEmployees(userRole);
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary mb-1">
+                <i class="fas fa-users"></i> Quản Lý Nhân Viên
+            </h2>
+            <p class="text-muted mb-0">Quản lý thông tin và quyền hạn của nhân viên trong hệ thống</p>
+        </div>
+        <div class="d-flex gap-2">
+            @if (canManageEmployees)
+            {
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Thêm Nhân Viên
+                </a>
+            }
+            <button class="btn btn-outline-success btn-sm" onclick="exportEmployees()">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+            <button class="btn btn-outline-info btn-sm" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Làm mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count()</h4>
+                    <small>Tổng nhân viên</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-check fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(e => e.Status == true)</h4>
+                    <small>Đang làm việc</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-times fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(e => e.Status == false)</h4>
+                    <small>Đã nghỉ việc</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-crown fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(e => e.RoleName == "Admin")</h4>
+                    <small>Quản trị viên</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Tìm kiếm:</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tên, email, điện thoại...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Chức vụ:</label>
+                    <select id="roleFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Librarian">Librarian</option>
+                        <option value="Employee">Employee</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Trạng thái:</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="active">Đang làm việc</option>
+                        <option value="inactive">Đã nghỉ việc</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> Lọc
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    @if (TempData["msg"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["msg"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Employee Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> Danh Sách Nhân Viên
+            </h5>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Chưa có nhân viên nào</h5>
+                    <p class="text-muted">Hãy thêm nhân viên đầu tiên cho hệ thống</p>
+                    @if (canManageEmployees)
+                    {
+                        <a asp-action="Create" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Thêm Nhân Viên
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="employeeTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="80">ID</th>
+                                <th width="80">Ảnh</th>
+                                <th>Họ & Tên</th>
+                                <th>Email</th>
+                                <th width="120">Điện thoại</th>
+                                <th width="100">Chức vụ</th>
+                                <th width="120">Ngày vào</th>
+                                <th width="120">Trạng thái</th>
+                                <th width="180">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var employee in Model)
+                            {
+                                var rowClass = employee.Status == false ? "table-secondary" : "";
+                                <tr class="@rowClass">
+                                    <td>
+                                        <span class="badge bg-primary">#@employee.EmployeeId</span>
+                                    </td>
+                                    <td>
+                                        <div class="position-relative">
+                                            @if (!string.IsNullOrEmpty(employee.Avatar))
+                                            {
+                                                <img src="@employee.Avatar" alt="Avatar" 
+                                                     class="rounded-circle border" 
+                                                     style="width:45px;height:45px;object-fit:cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white" 
+                                                     style="width:45px;height:45px;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            }
+                                            @if (employee.Status == false)
+                                            {
+                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                    <i class="fas fa-times" style="font-size: 8px;"></i>
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <div class="fw-bold">@employee.FirstName @employee.LastName</div>
+                                            <small class="text-muted">ID: @employee.EmployeeId</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-envelope text-muted me-2"></i>
+                                            <span>@employee.Email</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-phone text-muted me-2"></i>
+                                            <span>@employee.PhoneNumber</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var (roleText, roleClass, roleIcon) = employee.RoleName switch
+                                            {
+                                                "Admin" => ("Admin", "bg-danger", "fas fa-crown"),
+                                                "Librarian" => ("Thủ thư", "bg-primary", "fas fa-book"),
+                                                "Employee" => ("Nhân viên", "bg-secondary", "fas fa-user"),
+                                                _ => ("Khác", "bg-light text-dark", "fas fa-question")
+                                            };
+                                        }
+                                        <span class="badge @roleClass">
+                                            <i class="@roleIcon"></i> @roleText
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            @employee.StartDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (employee.Status == true)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> Hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle"></i> Đã nghỉ
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@employee.EmployeeId" 
+                                               class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (canManageEmployees)
+                                            {
+                                                <a asp-action="Update" asp-route-id="@employee.EmployeeId" 
+                                                   class="btn btn-sm btn-outline-info" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                
+                                                @* Không cho phép khóa tài khoản Admin (RoleId = 1) *@
+                                                @if (employee.RoleId != 1)
+                                                {
+                                                    <a asp-action="ChangeStatus" 
+                                                       asp-route-id="@employee.EmployeeId"
+                                                       asp-route-actionType="@(employee.Status == true ? "lock" : "unlock")"
+                                                       class="btn btn-sm @(employee.Status == true ? "btn-outline-warning" : "btn-outline-success")"
+                                                       onclick="return confirm('Bạn có chắc muốn @(employee.Status == true ? "tạm khóa" : "kích hoạt") nhân viên này?')"
+                                                       title="@(employee.Status == true ? "Tạm khóa" : "Kích hoạt")">
+                                                        <i class="fas @(employee.Status == true ? "fa-user-lock" : "fa-user-check")"></i>
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    @* Hiển thị nút disabled cho Admin với tooltip giải thích *@
+                                                    <button class="btn btn-sm btn-outline-secondary" 
+                                                            disabled 
+                                                            title="Không thể khóa tài khoản Admin">
+                                                        <i class="fas fa-shield-alt"></i>
+                                                    </button>
+                                                }
+                                                
+                                                @* Cũng không cho phép xóa tài khoản Admin *@
+                                                @if (isAdmin && employee.RoleId != 1)
+                                                {
+                                                    <a asp-action="Delete" asp-route-id="@employee.EmployeeId" 
+                                                       class="btn btn-sm btn-outline-danger"
+                                                       onclick="return confirm('Bạn có chắc muốn xóa nhân viên này? Hành động này không thể hoàn tác!')"
+                                                       title="Xóa nhân viên">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </a>
+                                                }
+                                                else if (isAdmin && employee.RoleId == 1)
+                                                {
+                                                    @* Hiển thị nút disabled cho Admin với tooltip giải thích *@
+                                                    <button class="btn btn-sm btn-outline-secondary" 
+                                                            disabled 
+                                                            title="Không thể xóa tài khoản Admin">
+                                                        <i class="fas fa-shield-alt"></i>
+                                                    </button>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const rows = document.querySelectorAll('#employeeTable tbody tr');
+
+            rows.forEach(row => {
+                const name = row.cells[2].textContent.toLowerCase();
+                const email = row.cells[3].textContent.toLowerCase();
+                const phone = row.cells[4].textContent.toLowerCase();
+                const roleElement = row.cells[5].querySelector('.badge');
+                const statusElement = row.cells[7].querySelector('.badge');
+
+                const roleText = roleElement ? roleElement.textContent.trim() : '';
+                const statusText = statusElement ? statusElement.textContent.trim() : '';
+
+                const matchesSearch = name.includes(searchTerm) || 
+                                    email.includes(searchTerm) || 
+                                    phone.includes(searchTerm);
+
+                let matchesRole = true;
+                if (roleFilter !== '') {
+                    matchesRole = roleText.toLowerCase().includes(roleFilter.toLowerCase());
+                }
+
+                let matchesStatus = true;
+                if (statusFilter !== '') {
+                    if (statusFilter === 'active') {
+                        matchesStatus = statusText.includes('Hoạt động');
+                    } else if (statusFilter === 'inactive') {
+                        matchesStatus = statusText.includes('Đã nghỉ');
+                    }
+                }
+
+                row.style.display = matchesSearch && matchesRole && matchesStatus ? '' : 'none';
+            });
+        }
+
+        function applyFilters() {
+            filterTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            filterTable();
+        }
+
+        function exportEmployees() {
+            alert('Xuất danh sách nhân viên ra Excel (Cần triển khai API)');
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+
+        // Real-time search
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('roleFilter').addEventListener('change', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+    </script>
+}

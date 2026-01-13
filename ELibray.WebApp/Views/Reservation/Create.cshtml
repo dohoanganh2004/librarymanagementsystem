@@ -1,0 +1,345 @@
+﻿@using ELibrary.WebApp.DTO.Response
+@using Microsoft.AspNetCore.Http
+@using ELibrary.WebApp.Helpers
+@inject E_Library.Models.ElibraryContext DbContext
+
+@{
+    ViewData["Title"] = "Tạo Phiếu Đặt Chỗ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var book = ViewBag.Book as BookResponseDTO;
+    var reader = ViewBag.Reader as ReaderResponseDTO;
+    
+    // Check user role
+    var employeeId = Context.Session.GetInt32("employeeId");
+    var readerId = Context.Session.GetInt32("readerId");
+    var userRole = employeeId.HasValue ? await RoleHelper.GetUserRoleAsync(Context, DbContext) : null;
+    
+    var isAdmin = RoleHelper.IsAdmin(userRole);
+    var isLibrarian = RoleHelper.IsLibrarian(userRole);
+    var isReader = readerId.HasValue;
+    var canManageReservations = RoleHelper.CanManageReservations(userRole);
+}
+
+<style>
+    .reservation-create-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .create-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .create-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .book-preview {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .book-image {
+        width: 120px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        color: #212529;
+        margin-bottom: 0.75rem;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border: 1px solid #e9ecef;
+    }
+    
+    .section-title {
+        color: #495057;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
+    .form-control:focus {
+        border-color: #4facfe;
+        box-shadow: 0 0 0 0.2rem rgba(79, 172, 254, 0.25);
+    }
+    
+    .btn-create {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-create:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .alert-modern {
+        border: none;
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .breadcrumb-modern {
+        background: rgba(255,255,255,0.1);
+        border-radius: 50px;
+        padding: 0.5rem 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .breadcrumb-modern .breadcrumb-item a {
+        color: white;
+        text-decoration: none;
+    }
+    
+    .breadcrumb-modern .breadcrumb-item.active {
+        color: rgba(255,255,255,0.8);
+    }
+</style>
+
+<div class="reservation-create-container">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-modern">
+                <li class="breadcrumb-item"><a href="/Home/Index">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/Reservation/List">Đặt chỗ</a></li>
+                <li class="breadcrumb-item active">Tạo phiếu đặt chỗ</li>
+            </ol>
+        </nav>
+
+        <!-- Header Card -->
+        <div class="create-card">
+            <div class="create-header">
+                <h1 class="mb-2">
+                    <i class="fas fa-bookmark me-3"></i>Tạo Phiếu Đặt Chỗ
+                </h1>
+                <p class="mb-0 opacity-75">
+                    @if (canManageReservations)
+                    {
+                        <span>Tạo phiếu đặt chỗ cho độc giả trong hệ thống</span>
+                    }
+                    else
+                    {
+                        <span>Đặt chỗ sách yêu thích để không bỏ lỡ cơ hội mượn</span>
+                    }
+                </p>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        @if (ViewBag.Success != null)
+        {
+            <div class="alert alert-success alert-modern">
+                <i class="fas fa-check-circle me-2"></i>@ViewBag.Success
+            </div>
+        }
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-modern">
+                <i class="fas fa-exclamation-triangle me-2"></i>@ViewBag.Error
+            </div>
+        }
+
+        <!-- Main Form -->
+        <form asp-controller="Reservation" asp-action="Create" method="post">
+            <input type="hidden" name="BookId" value="@book?.BookId" />
+            <input type="hidden" name="ReaderId" value="@reader?.ReaderId" />
+
+            <div class="row">
+                <!-- Book Information -->
+                <div class="col-lg-8">
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-book text-primary me-2"></i>Thông Tin Sách
+                        </h4>
+
+                        <div class="book-preview">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <img src="@book?.Image" class="book-image" alt="@book?.Title" />
+                                </div>
+                                <div class="col">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="info-label">Tên sách:</div>
+                                            <div class="info-value">@book?.Title</div>
+                                            
+                                            <div class="info-label">Tác giả:</div>
+                                            <div class="info-value">@book?.AuthorName</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="info-label">Thể loại:</div>
+                                            <div class="info-value">@book?.CategoryName</div>
+                                            
+                                            <div class="info-label">Số lượng còn lại:</div>
+                                            <div class="info-value">
+                                                <span class="badge bg-success fs-6">@book?.Quantity cuốn</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label info-label">
+                                        <i class="fas fa-sort-numeric-up me-1"></i>Số lượng đặt chỗ
+                                    </label>
+                                    <input type="number" class="form-control" name="Quantity" 
+                                           min="1" max="@book.Quantity" value="1" required />
+                                    <div class="form-text">Tối đa @book.Quantity cuốn</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label info-label">
+                                        <i class="fas fa-calendar-alt me-1"></i>Ngày dự kiến nhận
+                                    </label>
+                                    <input type="date" class="form-control" name="PickupDate" 
+                                           value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-dd")" required />
+                                    <div class="form-text">Thời hạn giữ chỗ tối đa 7 ngày</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label info-label">
+                                <i class="fas fa-sticky-note me-1"></i>Ghi chú (tùy chọn)
+                            </label>
+                            <textarea name="Notes" class="form-control" rows="3" 
+                                      placeholder="Nhập ghi chú về phiếu đặt chỗ..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reader Information -->
+                <div class="col-lg-4">
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-user-circle text-info me-2"></i>Thông Tin Độc Giả
+                        </h4>
+
+                        <div class="text-center mb-3">
+                            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                        </div>
+
+                        <div class="info-label">Họ và tên:</div>
+                        <div class="info-value">@reader?.FirstName @reader?.LastName</div>
+
+                        <div class="info-label">Mã độc giả:</div>
+                        <div class="info-value">
+                            <span class="badge bg-primary">@reader?.ReaderId</span>
+                        </div>
+
+                        <div class="info-label">Email:</div>
+                        <div class="info-value">@reader?.Email</div>
+
+                        <div class="info-label">Số điện thoại:</div>
+                        <div class="info-value">@reader?.PhoneNumber</div>
+
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Mỗi độc giả có thể đặt chỗ tối đa 5 cuốn sách cùng lúc.
+                        </div>
+                    </div>
+
+                    <!-- Reservation Summary -->
+                    <div class="form-section">
+                        <h4 class="section-title">
+                            <i class="fas fa-file-invoice text-success me-2"></i>Tóm Tắt Đặt Chỗ
+                        </h4>
+
+                        <div class="info-label">Ngày tạo:</div>
+                        <div class="info-value">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</div>
+
+                        <div class="info-label">Trạng thái:</div>
+                        <div class="info-value">
+                            <span class="badge bg-warning">Chờ xác nhận</span>
+                        </div>
+
+                        <div class="info-label">Thời hạn giữ chỗ:</div>
+                        <div class="info-value">7 ngày kể từ ngày tạo</div>
+
+                        @if (canManageReservations)
+                        {
+                            <div class="info-label">Người tạo:</div>
+                            <div class="info-value">
+                                <span class="badge bg-secondary">
+                                    @(isAdmin ? "Quản trị viên" : "Thủ thư")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4 mb-4">
+                <button type="submit" class="btn btn-create me-3">
+                    <i class="fas fa-bookmark me-2"></i>Tạo Phiếu Đặt Chỗ
+                </button>
+                <a href="/Reservation/List" class="btn btn-cancel">
+                    <i class="fas fa-times me-2"></i>Hủy Bỏ
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

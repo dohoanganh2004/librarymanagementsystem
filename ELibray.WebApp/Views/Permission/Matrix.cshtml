@@ -1,0 +1,296 @@
+@using E_Library.Models
+@{
+    ViewData["Title"] = "Ma Trận Phân Quyền";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var roles = ViewBag.Roles as List<Role>;
+    var allPermissions = ViewBag.AllPermissions as List<Permission>;
+    var rolePermissions = ViewBag.RolePermissions as Dictionary<int, List<int>>;
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary mb-1">
+                <i class="fas fa-table"></i> Ma Trận Phân Quyền
+            </h2>
+            <p class="text-muted mb-0">Quản lý quyền truy cập chi tiết cho từng vai trò</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Permission" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <button class="btn btn-success" onclick="savePermissions()">
+                <i class="fas fa-save"></i> Lưu thay đổi
+            </button>
+        </div>
+    </div>
+
+    <!-- Permission Matrix -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-matrix"></i> Ma Trận Quyền Truy Cập
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover mb-0" id="permissionMatrix">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th style="min-width: 300px;">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-key me-2"></i>
+                                    Quyền / Chức năng
+                                </div>
+                            </th>
+                            @if (roles != null)
+                            {
+                                @foreach (var role in roles)
+                                {
+                                    var badgeClass = role.RoleName switch
+                                    {
+                                        "Admin" => "bg-danger",
+                                        "Librarian" => "bg-warning",
+                                        "Employee" => "bg-info",
+                                        _ => "bg-secondary"
+                                    };
+                                    
+                                    <th class="text-center" style="min-width: 120px;">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge @badgeClass mb-1">@role.RoleName</span>
+                                            <small class="text-muted">ID: @role.RoleId</small>
+                                        </div>
+                                    </th>
+                                }
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (allPermissions != null && roles != null)
+                        {
+                            @foreach (var permission in allPermissions)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                                            <div>
+                                                <div class="fw-bold">@permission.Description</div>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-link"></i> @permission.Link
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    @foreach (var role in roles)
+                                    {
+                                        var hasPermission = rolePermissions?.ContainsKey(role.RoleId) == true && 
+                                                          rolePermissions[role.RoleId].Contains(permission.PermissionId);
+                                        
+                                        <td class="text-center">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input permission-checkbox" 
+                                                       type="checkbox" 
+                                                       id="perm_@(role.RoleId)_@(permission.PermissionId)"
+                                                       data-role="@role.RoleId" 
+                                                       data-permission="@permission.PermissionId"
+                                                       @(hasPermission ? "checked" : "")
+                                                       onchange="markAsChanged()">
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-light">
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        Tích vào ô để cấp quyền, bỏ tích để thu hồi quyền
+                    </small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="selectAllForRole()">
+                        <i class="fas fa-check-square"></i> Chọn tất cả
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearAllForRole()">
+                        <i class="fas fa-square"></i> Bỏ chọn tất cả
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-magic"></i> Thao Tác Nhanh
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-success btn-sm" onclick="copyPermissions()">
+                            <i class="fas fa-copy"></i> Sao chép quyền
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="resetToDefault()">
+                            <i class="fas fa-undo"></i> Khôi phục mặc định
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="exportMatrix()">
+                            <i class="fas fa-download"></i> Xuất ma trận
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Thống Kê Quyền
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        @if (roles != null && allPermissions != null)
+                        {
+                            @foreach (var role in roles)
+                            {
+                                var rolePermCount = rolePermissions?.ContainsKey(role.RoleId) == true ? 
+                                                  rolePermissions[role.RoleId].Count : 0;
+                                var percentage = allPermissions.Count > 0 ? 
+                                               (rolePermCount * 100 / allPermissions.Count) : 0;
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <h5 class="text-primary">@rolePermCount/@allPermissions.Count</h5>
+                                        <div class="progress mb-1" style="height: 8px;">
+                                            <div class="progress-bar" style="width: @percentage%"></div>
+                                        </div>
+                                        <small class="text-muted">@role.RoleName (@percentage%)</small>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        let hasChanges = false;
+
+        function markAsChanged() {
+            hasChanges = true;
+            // Visual indicator for unsaved changes
+            document.querySelector('.btn-success').classList.add('btn-warning');
+            document.querySelector('.btn-success').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Có thay đổi chưa lưu';
+        }
+
+        function savePermissions() {
+            if (!hasChanges) {
+                alert('Không có thay đổi nào để lưu');
+                return;
+            }
+
+            const permissions = {};
+            document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                const key = `${checkbox.dataset.role}_${checkbox.dataset.permission}`;
+                permissions[key] = checkbox.checked;
+            });
+
+            // Send to server
+            fetch('/Permission/UpdateMatrix', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify(permissions)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Lưu thay đổi thành công!');
+                    hasChanges = false;
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi lưu thay đổi');
+            });
+        }
+
+        function selectAllForRole() {
+            const roleId = prompt('Nhập ID vai trò để chọn tất cả quyền:');
+            if (roleId) {
+                document.querySelectorAll(`input[data-role="${roleId}"]`).forEach(cb => {
+                    cb.checked = true;
+                });
+                markAsChanged();
+            }
+        }
+
+        function clearAllForRole() {
+            const roleId = prompt('Nhập ID vai trò để bỏ chọn tất cả quyền:');
+            if (roleId) {
+                document.querySelectorAll(`input[data-role="${roleId}"]`).forEach(cb => {
+                    cb.checked = false;
+                });
+                markAsChanged();
+            }
+        }
+
+        function copyPermissions() {
+            const fromRole = prompt('Sao chép từ vai trò (ID):');
+            const toRole = prompt('Đến vai trò (ID):');
+            
+            if (fromRole && toRole) {
+                document.querySelectorAll(`input[data-role="${fromRole}"]`).forEach(fromCb => {
+                    const permissionId = fromCb.dataset.permission;
+                    const toCb = document.querySelector(`input[data-role="${toRole}"][data-permission="${permissionId}"]`);
+                    if (toCb) {
+                        toCb.checked = fromCb.checked;
+                    }
+                });
+                markAsChanged();
+                alert(`Đã sao chép quyền từ vai trò ${fromRole} sang ${toRole}`);
+            }
+        }
+
+        function resetToDefault() {
+            if (confirm('Bạn có chắc chắn muốn khôi phục về cài đặt mặc định?')) {
+                location.reload();
+            }
+        }
+
+        function exportMatrix() {
+            alert('Xuất ma trận phân quyền ra Excel');
+        }
+
+        // Warn before leaving if there are unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (hasChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+}

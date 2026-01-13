@@ -17,7 +17,7 @@ public partial class Checkout
 
     public DateOnly? DueDate { get; set; }
 
-    public bool? Status { get; set; }
+    public string Status { get; set; } = null!;
 
     public virtual Book Book { get; set; } = null!;
 

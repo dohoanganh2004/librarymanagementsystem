@@ -1,0 +1,171 @@
+﻿@using ELibrary.WebApp.DTO.Response
+@model List<ReaderResponseDTO>
+
+@{
+    ViewData["Title"] = "Quản lý Độc giả";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary mb-2">
+                        <i class="fas fa-users me-2"></i>Quản lý Độc giả
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Quản lý thông tin @(Model?.Count ?? 0) độc giả trong hệ thống
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0 text-primary">
+                <i class="fas fa-search me-2"></i>Tìm kiếm độc giả
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="All" asp-controller="Reader">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Tên độc giả</label>
+                        <input type="text" class="form-control" name="name" placeholder="Nhập tên...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="email" class="form-control" name="email" placeholder="Nhập email...">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-semibold">Trạng thái</label>
+                        <select class="form-select" name="status">
+                            <option value="">Tất cả</option>
+                            <option value="true">Hoạt động</option>
+                            <option value="false">Tạm khóa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" type="submit">
+                            <i class="fas fa-filter me-1"></i>Lọc
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-list me-2"></i>Danh sách độc giả
+            </h5>
+            <span class="badge bg-info fs-6">
+                @(Model?.Count ?? 0) độc giả
+            </span>
+        </div>
+
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>SĐT</th>
+                             
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reader in Model)
+                            {
+                                <tr>
+                                    <td>@reader.ReaderId</td>
+                                    <td>@reader.FirstName @reader.LastName</td>
+                                    <td>
+                                        <a href="mailto:@reader.Email">@reader.Email</a>
+                                    </td>
+                                    <td>
+                                        @(string.IsNullOrEmpty(reader.PhoneNumber)
+                                            ? "Chưa có"
+                                            : reader.PhoneNumber)
+                                    </td>
+                                   
+                                    <td>
+                                        @if (reader.Status == true)
+                                        {
+                                            <span class="badge bg-success">Hoạt động</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Tạm khóa</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a asp-action="Details"
+                                               asp-route-id="@reader.ReaderId"
+                                               class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a class="btn btn-outline-danger"
+                                               asp-controller="Reader"
+                                               asp-action="ChangeStatus"
+                                               asp-route-id="@reader.ReaderId"
+                                               asp-route-actionType="lock"
+                                               onclick="return confirm('Bạn có chắc muốn khóa reader này?')">
+                                                <i class="fas fa-lock"></i>
+                                            </a>
+
+                                            <a class="btn btn-outline-success"
+                                               asp-controller="Reader"
+                                               asp-action="ChangeStatus"
+                                               asp-route-id="@reader.ReaderId"
+                                               asp-route-actionType="unlock"
+                                               onclick="return confirm('Bạn có chắc muốn mở khóa reader này?')">
+                                                <i class="fas fa-unlock"></i>
+                                            </a>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Chưa có độc giả nào</h5>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editReader(id) {
+            alert("Chỉnh sửa độc giả ID: " + id);
+        }
+
+        function toggleStatus(id) {
+            if (confirm("Bạn có chắc muốn thay đổi trạng thái tài khoản?")) {
+                alert("Đổi trạng thái reader ID: " + id);
+            }
+        }
+    </script>
+}

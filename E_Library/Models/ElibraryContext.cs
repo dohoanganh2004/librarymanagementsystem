@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 
 namespace E_Library.Models;
-
 
 public partial class ElibraryContext : DbContext
 {
@@ -44,16 +42,7 @@ public partial class ElibraryContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-        var builder = new ConfigurationBuilder(); //Microsoft.Extensions...
-        builder.SetBasePath(Directory.GetCurrentDirectory());
-        builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-        var configuration = builder.Build();
-        optionsBuilder.UseSqlServer(configuration.GetConnectionString("Default"));
-    }
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-       // => optionsBuilder.UseSqlServer("Server=DESKTOP-7KQPR9J;uid=sa;password=123456789;database=ELibrary;Encrypt=True;TrustServerCertificate=True;");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { if (!optionsBuilder.IsConfigured) { var connectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("MyCnn"); optionsBuilder.UseSqlServer(connectionString); } }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -136,7 +125,9 @@ public partial class ElibraryContext : DbContext
             entity.Property(e => e.CheckoutId).HasColumnName("CheckoutID");
             entity.Property(e => e.BookId).HasColumnName("BookID");
             entity.Property(e => e.ReaderId).HasColumnName("ReaderID");
-            entity.Property(e => e.Status).HasDefaultValue(true);
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .IsUnicode(false);
 
             entity.HasOne(d => d.Book).WithMany(p => p.Checkouts)
                 .HasForeignKey(d => d.BookId)
@@ -274,9 +265,10 @@ public partial class ElibraryContext : DbContext
 
             entity.Property(e => e.ReservationId).HasColumnName("ReservationID");
             entity.Property(e => e.BookId).HasColumnName("BookID");
+            entity.Property(e => e.Quantity).HasDefaultValue(1);
             entity.Property(e => e.ReaderId).HasColumnName("ReaderID");
             entity.Property(e => e.ReservationDate).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.Status).HasDefaultValue(true);
+            entity.Property(e => e.Status).HasMaxLength(20);
 
             entity.HasOne(d => d.Book).WithMany(p => p.Reservations)
                 .HasForeignKey(d => d.BookId)

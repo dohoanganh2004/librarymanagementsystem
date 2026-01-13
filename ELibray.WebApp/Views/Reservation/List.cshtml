@@ -1,0 +1,434 @@
+﻿@using Microsoft.AspNetCore.Http
+@using ELibrary.WebApp.Helpers
+@inject E_Library.Models.ElibraryContext DbContext
+@model IEnumerable<ELibrary.WebApp.DTO.Response.ReservationResponseDTO>
+
+@{
+    ViewData["Title"] = "Danh sách Phiếu Đặt Sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Check user role
+    var employeeId = Context.Session.GetInt32("employeeId");
+    var readerId = Context.Session.GetInt32("readerId");
+    var userRole = employeeId.HasValue ? await RoleHelper.GetUserRoleAsync(Context, DbContext) : null;
+    
+    var isAdmin = RoleHelper.IsAdmin(userRole);
+    var isLibrarian = RoleHelper.IsLibrarian(userRole);
+    var isReader = readerId.HasValue;
+    var canManageReservations = RoleHelper.CanManageReservations(userRole);
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-6 fw-bold text-primary mb-2">
+                        <i class="fas fa-bookmark me-2"></i>Danh sách Đặt chỗ
+                    </h1>
+                    <p class="text-muted mb-0">
+                        @if (canManageReservations)
+                        {
+                            <span>Quản lý tất cả phiếu đặt chỗ trong hệ thống</span>
+                            @if (isLibrarian)
+                            {
+                                <span class="badge bg-primary ms-2">Thủ thư</span>
+                            }
+                            else if (isAdmin)
+                            {
+                                <span class="badge bg-danger ms-2">Quản trị viên</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>Danh sách phiếu đặt chỗ của bạn</span>
+                        }
+                    </p>
+                </div>
+                @if (isReader)
+                {
+                    <div>
+                        <a href="/Reservation/Create" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Đặt chỗ mới
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservations Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-list me-2"></i>Danh sách phiếu đặt chỗ
+            </h5>
+            @if (canManageReservations)
+            {
+                <div class="d-flex gap-2">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-1"></i>Lọc theo trạng thái
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="?status=all">Tất cả</a></li>
+                            <li><a class="dropdown-item" href="?status=pending">Chờ xử lý</a></li>
+                            <li><a class="dropdown-item" href="?status=approved">Đã duyệt</a></li>
+                            <li><a class="dropdown-item" href="?status=rejected">Đã từ chối</a></li>
+                            <li><a class="dropdown-item" href="?status=cancelled">Đã hủy</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" onclick="exportReservations()">
+                        <i class="fas fa-download me-1"></i>Xuất Excel
+                    </button>
+                </div>
+            }
+        </div>
+        <div class="card-body p-0">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                @if (canManageReservations)
+                                {
+                                    <th class="border-0">
+                                        <input type="checkbox" class="form-check-input" id="selectAll">
+                                    </th>
+                                }
+                                <th class="border-0">ID Phiếu</th>
+                                <th class="border-0">Tên Sách</th>
+                                @if (canManageReservations)
+                                {
+                                    <th class="border-0">Độc giả</th>
+                                }
+                                <th class="border-0">Số lượng</th>
+                                <th class="border-0">Ngày Đặt</th>
+                                <th class="border-0">Trạng Thái</th>
+                                <th class="border-0">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    @if (canManageReservations)
+                                    {
+                                        <td>
+                                            <input type="checkbox" class="form-check-input reservation-checkbox" value="@item.ReservationId">
+                                        </td>
+                                    }
+                                    <td>
+                                        <span class="badge bg-primary">#@item.ReservationId</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">@item.Title</div>
+                                    </td>
+                                    @if (isAdmin)
+                                    {
+                                        <td>
+                                            <div class="fw-semibold">@(item.ReaderName ?? "N/A")</div>
+                                          
+                                        </td>
+                                    }
+                                    <td>
+                                        <span class="badge bg-info">@item.Quantity</span>
+                                    </td>
+                                    <td>
+                                        <span>@item.ReservationDate.ToString("dd/MM/yyyy")</span>
+                                    
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = item.Status switch
+                                            {
+                                                "Pending" or "Chờ xử lý" => "bg-warning text-dark",
+                                                "Approved" or "Đã duyệt" => "bg-success",
+                                                "Rejected" or "Đã từ chối" => "bg-danger",
+                                                "Cancelled" or "Đã hủy" => "bg-secondary",
+                                                _ => "bg-light text-dark"
+                                            };
+                                            var statusIcon = item.Status switch
+                                            {
+                                                "Pending" or "Chờ xử lý" => "fas fa-clock",
+                                                "Approved" or "Đã duyệt" => "fas fa-check-circle",
+                                                "Rejected" or "Đã từ chối" => "fas fa-times-circle",
+                                                "Cancelled" or "Đã hủy" => "fas fa-ban",
+                                                _ => "fas fa-question-circle"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">
+                                            <i class="@statusIcon me-1"></i>@item.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <!-- View Details - Available for both Admin and Reader -->
+                                            <a href="/Reservation/Details?id=@item.ReservationId"
+                                               class="btn btn-outline-primary" title="Xem Chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+
+                                            @if (canManageReservations)
+                                            {
+                                                <!-- Admin & Librarian buttons -->
+                                                @if (item.Status == "Pending" || item.Status == "Chờ xử lý")
+                                                {
+                                                    <a href="/Reservation/ChangeStatus?id=@item.ReservationId&actionType=approve"
+                                                       class="btn btn-outline-success" title="Duyệt Phiếu"
+                                                       onclick="return confirm('Bạn có chắc chắn muốn duyệt phiếu này?')">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+
+                                                    <a href="/Reservation/ChangeStatus?id=@item.ReservationId&actionType=reject"
+                                                       class="btn btn-outline-danger" title="Từ Chối"
+                                                       onclick="return confirm('Bạn có chắc chắn muốn từ chối phiếu này?')">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                }
+
+                                                <button class="btn btn-outline-info" onclick="editReservation(@item.ReservationId)" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+
+                                                <button class="btn btn-outline-secondary" onclick="viewHistory(@item.ReservationId)" title="Lịch sử">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                            }
+
+                                            @if (isReader && (item.Status == "Pending" || item.Status == "Chờ xử lý"))
+                                            {
+                                                <!-- Reader can only cancel their own pending reservations -->
+                                                <a href="/Reservation/ChangeStatus?id=@item.ReservationId&actionType=cancel"
+                                                   class="btn btn-outline-warning" title="Hủy Phiếu"
+                                                   onclick="return confirm('Bạn có chắc chắn muốn hủy phiếu đặt chỗ này?')">
+                                                    <i class="fas fa-ban"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-bookmark fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted mb-3">
+                        @if (canManageReservations)
+                        {
+                            <span>Chưa có phiếu đặt chỗ nào trong hệ thống</span>
+                        }
+                        else
+                        {
+                            <span>Bạn chưa có phiếu đặt chỗ nào</span>
+                        }
+                    </h4>
+                    <p class="text-muted mb-4">
+                        @if (isReader)
+                        {
+                            <span>Hãy đặt chỗ sách yêu thích để không bỏ lỡ cơ hội mượn sách</span>
+                        }
+                        else
+                        {
+                            <span>Các phiếu đặt chỗ sẽ hiển thị tại đây khi có độc giả đặt chỗ</span>
+                        }
+                    </p>
+                    @if (isReader)
+                    {
+                        <a href="/Reservation/Create" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Đặt chỗ sách ngay
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (canManageReservations && Model != null && Model.Any())
+    {
+        <!-- Bulk Actions for Admin & Librarian -->
+        <div class="card shadow-sm border-0 mt-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">
+                        <span id="selectedCount">0</span> phiếu được chọn
+                    </span>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-success btn-sm" onclick="bulkApprove()" disabled id="bulkApproveBtn">
+                            <i class="fas fa-check me-1"></i>Duyệt hàng loạt
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="bulkReject()" disabled id="bulkRejectBtn">
+                            <i class="fas fa-times me-1"></i>Từ chối hàng loạt
+                        </button>
+                        <button class="btn btn-warning btn-sm" onclick="bulkCancel()" disabled id="bulkCancelBtn">
+                            <i class="fas fa-ban me-1"></i>Hủy hàng loạt
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+@section Styles {
+    <style>
+        .table tbody tr:hover {
+            background-color: rgba(0,123,255,0.05);
+        }
+        
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .badge {
+            font-size: 0.875em;
+        }
+        
+        .reservation-checkbox:checked ~ * {
+            background-color: rgba(0,123,255,0.1);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        @if (canManageReservations)
+        {
+            <text>
+            // Admin & Librarian JavaScript
+            
+            // Select all checkbox functionality
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.reservation-checkbox');
+                const bulkButtons = document.querySelectorAll('#bulkApproveBtn, #bulkRejectBtn, #bulkCancelBtn');
+                
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                
+                updateSelectedCount();
+                toggleBulkButtons();
+            });
+            
+            // Individual checkbox change
+            document.querySelectorAll('.reservation-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectedCount();
+                    toggleBulkButtons();
+                });
+            });
+            
+            function updateSelectedCount() {
+                const selectedCount = document.querySelectorAll('.reservation-checkbox:checked').length;
+                document.getElementById('selectedCount').textContent = selectedCount;
+            }
+            
+            function toggleBulkButtons() {
+                const selectedCount = document.querySelectorAll('.reservation-checkbox:checked').length;
+                const bulkButtons = document.querySelectorAll('#bulkApproveBtn, #bulkRejectBtn, #bulkCancelBtn');
+                
+                bulkButtons.forEach(button => {
+                    button.disabled = selectedCount === 0;
+                });
+            }
+            
+            function bulkApprove() {
+                const selectedIds = getSelectedIds();
+                if (selectedIds.length === 0) return;
+                
+                if (confirm(`Bạn có chắc chắn muốn duyệt ${selectedIds.length} phiếu đặt chỗ?`)) {
+                    // Implement bulk approve logic
+                    alert(`Duyệt ${selectedIds.length} phiếu: ${selectedIds.join(', ')}`);
+                }
+            }
+            
+            function bulkReject() {
+                const selectedIds = getSelectedIds();
+                if (selectedIds.length === 0) return;
+                
+                if (confirm(`Bạn có chắc chắn muốn từ chối ${selectedIds.length} phiếu đặt chỗ?`)) {
+                    // Implement bulk reject logic
+                    alert(`Từ chối ${selectedIds.length} phiếu: ${selectedIds.join(', ')}`);
+                }
+            }
+            
+            function bulkCancel() {
+                const selectedIds = getSelectedIds();
+                if (selectedIds.length === 0) return;
+                
+                if (confirm(`Bạn có chắc chắn muốn hủy ${selectedIds.length} phiếu đặt chỗ?`)) {
+                    // Implement bulk cancel logic
+                    alert(`Hủy ${selectedIds.length} phiếu: ${selectedIds.join(', ')}`);
+                }
+            }
+            
+            function getSelectedIds() {
+                const checkboxes = document.querySelectorAll('.reservation-checkbox:checked');
+                return Array.from(checkboxes).map(cb => cb.value);
+            }
+            
+            function editReservation(reservationId) {
+                alert('Chỉnh sửa phiếu đặt chỗ ID: ' + reservationId);
+                // Implement edit logic
+            }
+            
+            function viewHistory(reservationId) {
+                alert('Xem lịch sử phiếu đặt chỗ ID: ' + reservationId);
+                // Implement history view logic
+            }
+            
+            function exportReservations() {
+                alert('Xuất danh sách đặt chỗ ra Excel');
+                // Implement export logic
+            }
+            </text>
+        }
+        
+        // Common JavaScript for both Admin and Reader
+        
+        // Auto-refresh page every 30 seconds to update status
+        setInterval(function() {
+            // Only refresh if user is not interacting
+            if (document.hidden === false) {
+                console.log('Auto-refreshing reservation status...');
+                // You can implement auto-refresh logic here
+            }
+        }, 30000);
+        
+        // Show loading state for action buttons
+        document.querySelectorAll('a[href*="ChangeStatus"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const button = this;
+                const originalText = button.innerHTML;
+                
+                // Show loading state
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                button.classList.add('disabled');
+                
+                // Reset after 3 seconds (in case of slow response)
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('disabled');
+                }, 3000);
+            });
+        });
+        
+        // Highlight rows on hover
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(0,123,255,0.05)';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+    </script>
+}

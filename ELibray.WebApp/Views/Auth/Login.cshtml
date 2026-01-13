@@ -1,0 +1,53 @@
+﻿@model E_Library.Models.Reader
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+}
+
+<div class="auth-header">
+    <div class="brand-logo">EL</div>
+    <h1>Chào mừng trở lại</h1>
+    <p>Đăng nhập vào tài khoản của bạn để tiếp tục</p>
+</div>
+
+<!-- Error Message -->
+@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+{
+    <div class="alert alert-danger text-center">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+<form asp-action="Login" asp-controller="Auth" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" asp-for="Email" placeholder="Nhập email của bạn" />
+        <span class="text-danger" asp-validation-for="Email"></span>
+    </div>
+
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <label class="form-label">Mật khẩu</label>
+            <a href="/Auth/ForgotPassword" class="auth-links">Quên mật khẩu?</a>
+        </div>
+        <input class="form-control" asp-for="Password" type="password" placeholder="Nhập mật khẩu" />
+        <span class="text-danger" asp-validation-for="Password"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Đăng nhập</button>
+</form>
+
+<div class="auth-links">
+    <p class="mb-0">
+        Chưa có tài khoản? 
+        <a asp-action="Register" asp-controller="Auth">Đăng ký ngay</a>
+    </p>
+</div>
+
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -1,0 +1,112 @@
+﻿@model ELibrary.WebApp.DTO.Request.EmployeeRequestDTO
+
+@{
+    ViewData["Title"] = "Thêm Nhân Viên Mới";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h4 class="mb-0"><i class="fas fa-user-plus"></i> Thêm Nhân Viên Mới</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Thông Tin Cơ Bản</h5>
+                        <hr />
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label fw-bold">Tên <span class="text-danger">*</span></label>
+                                <input asp-for="FirstName" class="form-control" placeholder="Ví dụ: Văn" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label fw-bold">Họ <span class="text-danger">*</span></label>
+                                <input asp-for="LastName" class="form-control" placeholder="Ví dụ: Nguyễn" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DoB" class="form-label fw-bold">Ngày Sinh</label>
+                            <input asp-for="DoB" class="form-control" type="date" />
+                            <span asp-validation-for="DoB" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-bold">Email <span class="text-danger">*</span></label>
+                            <input asp-for="Email" class="form-control" type="email" placeholder="email@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PhoneNumber" class="form-label fw-bold">Số Điện Thoại</label>
+                            <input asp-for="PhoneNumber" class="form-control" type="tel" placeholder="09xxxxxxxxx" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h5>Thông Tin Làm Việc</h5>
+                        <hr />
+                        <div class="mb-3">
+                            <label asp-for="RoleId" class="form-label fw-bold">Chức Vụ <span class="text-danger">*</span></label>
+                            <select asp-for="RoleId" class="form-select" asp-items="ViewBag.RoleId">
+                                <option value="">-- Chọn Chức Vụ --</option>
+                                @foreach (var role in ViewBag.Roles)
+                                {
+                                    <option value="@role.RoleId">@role.RoleName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="RoleId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="StartDate" class="form-label fw-bold">Ngày Bắt Đầu <span class="text-danger">*</span></label>
+                            <input asp-for="StartDate" class="form-control" type="date" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label asp-for="AvatarFile" class="form-label fw-bold">Ảnh Đại Diện (Avatar)</label>
+                            <input asp-for="AvatarFile" class="form-control" type="file" accept="image/*" id="avatarUpload" />
+                            <div class="mt-2 text-center border p-2 bg-light" style="width: 150px; height: 150px; border-radius: 50%; overflow: hidden; margin: 0 auto;">
+                                <img id="avatarPreview" src="https://via.placeholder.com/150?text=Avatar" alt="Avatar Preview" style="width: 100%; height: 100%; object-fit: cover;" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer text-end bg-white mt-3">
+                    <a asp-action="Index" class="btn btn-secondary me-2">Hủy Bỏ</a>
+                    <button type="submit" class="btn btn-info text-white"><i class="fas fa-save"></i> Lưu Nhân Viên</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        // Script nhỏ để preview ảnh khi chọn file
+        document.getElementById('avatarUpload').addEventListener('change', function (e) {
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                document.getElementById('avatarPreview').src = event.target.result;
+            };
+            if (e.target.files && e.target.files[0]) {
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

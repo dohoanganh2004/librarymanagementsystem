@@ -1,0 +1,159 @@
+@using E_Library.Models
+@model AuditLog
+
+@{
+    ViewData["Title"] = "Chi Tiết Log";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Chi Tiết Log #@Model.LogId
+                    </h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-info-circle"></i> Thông Tin Cơ Bản
+                            </h5>
+                            
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold">Log ID:</td>
+                                    <td><span class="badge bg-primary">@Model.LogId</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Thời gian:</td>
+                                    <td>
+                                        <i class="fas fa-clock text-muted"></i>
+                                        @Model.Timestamp?.ToString("dd/MM/yyyy HH:mm:ss")
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Nhân viên:</td>
+                                    <td>
+                                        <strong>@Model.Employee?.FirstName @Model.Employee?.LastName</strong>
+                                        <br>
+                                        <small class="text-muted">ID: @Model.EmployeeId</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Bảng dữ liệu:</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(Model.TableName))
+                                        {
+                                            <span class="badge bg-secondary">@Model.TableName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không xác định</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Record ID:</td>
+                                    <td>
+                                        @if (Model.RecordId.HasValue)
+                                        {
+                                            <span class="badge bg-info">@Model.RecordId</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Action Description -->
+                        <div class="col-md-6">
+                            <h5 class="text-success mb-3">
+                                <i class="fas fa-cogs"></i> Mô Tả Hành Động
+                            </h5>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>@Model.Description</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Changes -->
+                    @if (!string.IsNullOrEmpty(Model.OldData) || !string.IsNullOrEmpty(Model.NewData))
+                    {
+                        <hr>
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="text-warning mb-3">
+                                    <i class="fas fa-exchange-alt"></i> Thay Đổi Dữ Liệu
+                                </h5>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(Model.OldData))
+                            {
+                                <div class="col-md-6">
+                                    <h6 class="text-danger">
+                                        <i class="fas fa-minus-circle"></i> Dữ liệu cũ:
+                                    </h6>
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.9em;">@Model.OldData</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.NewData))
+                            {
+                                <div class="col-md-6">
+                                    <h6 class="text-success">
+                                        <i class="fas fa-plus-circle"></i> Dữ liệu mới:
+                                    </h6>
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.9em;">@Model.NewData</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Actions -->
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="/AuditLog" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                        </a>
+                        
+                        <div>
+                            @if (Model.EmployeeId > 0)
+                            {
+                                <a href="/AuditLog/ByEmployee/@Model.EmployeeId" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-user"></i> Xem log của nhân viên này
+                                </a>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(Model.TableName))
+                            {
+                                <a href="/AuditLog/ByTable/@Model.TableName" class="btn btn-outline-info">
+                                    <i class="fas fa-table"></i> Xem log của bảng @Model.TableName
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")

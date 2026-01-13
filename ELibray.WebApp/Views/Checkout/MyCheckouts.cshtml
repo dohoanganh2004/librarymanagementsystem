@@ -1,0 +1,328 @@
+@using E_Library.Models
+@model IEnumerable<Checkout>
+
+@{
+    ViewData["Title"] = "Sách Đã Mượn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@functions {
+    // Hàm Helper để trả về Text, Class CSS và ICON tương ứng với trạng thái
+    public (string text, string css, string icon) GetStatusBadge(string status, bool isOverdue)
+    {
+        return status?.ToLower() switch
+        {
+            "pendingpickup" => ("Chờ nhận sách", "bg-info", "fas fa-hourglass-start"),
+            "onloan" when isOverdue => ("Quá hạn", "bg-danger", "fas fa-calendar-times"),
+            "onloan" => ("Đang mượn", "bg-warning", "fas fa-book-reader"),
+            "returned" => ("Đã trả", "bg-success", "fas fa-check-circle"),
+            "overduereturn" => ("Trả trễ", "bg-warning text-dark", "fas fa-history"),
+            "lost" => ("Làm mất", "bg-dark", "fas fa-ban"),
+            "damaged" => ("Làm hỏng", "bg-secondary", "fas fa-exclamation-triangle"),
+            _ => ("Không rõ", "bg-light text-dark", "fas fa-question-circle")
+        };
+    }
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary mb-1">
+                <i class="fas fa-book-reader"></i> Sách Đã Mượn
+            </h2>
+            <p class="text-muted mb-0">Theo dõi tình trạng các sách bạn đã mượn</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-info btn-sm" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Làm mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-book-open fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count()</h4>
+                    <small>Tổng số phiếu</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(c => c.Status == "OnLoan" || c.Status == "PendingPickup")</h4>
+                    <small>Đang mượn</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(c => c.Status == "Returned" || c.Status == "OverdueReturn")</h4>
+                    <small>Đã trả</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    @{
+                        var overdueCount = Model.Count(c =>
+                        c.DueDate.HasValue &&
+                        c.DueDate.Value.ToDateTime(TimeOnly.MaxValue) < DateTime.Now &&
+                        (c.Status == "OnLoan" || c.Status == "Overdue")
+                        );
+                    }
+                    <h4 class="mb-1">@overdueCount</h4>
+                    <small>Quá hạn</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Tìm kiếm:</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tên sách...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Trạng thái:</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="pendingpickup">Chờ nhận sách</option>
+                        <option value="onloan">Đang mượn</option>
+                        <option value="returned">Đã trả</option>
+                        <option value="overdue">Quá hạn</option>
+                        <option value="lost">Làm mất</option>
+                        <option value="damaged">Làm hỏng</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> Lọc
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Checkout Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> Danh Sách Sách Đã Mượn
+            </h5>
+        </div>
+
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-book-reader fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Bạn chưa mượn sách nào</h5>
+                    <p class="text-muted">Hãy đặt sách để bắt đầu mượn sách từ thư viện</p>
+                    <a href="/Book/All" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Tìm sách
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="checkoutTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th width="80">ID</th>
+                                <th>Sách</th>
+                                <th width="120">Ngày mượn</th>
+                                <th width="120">Hạn trả</th>
+                                <th width="120">Ngày trả</th>
+                                <th width="120">Trạng thái</th>
+                                <th width="120">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                // Lấy DueDate dưới dạng DateTime để so sánh
+                                var dueDateTime = item.DueDate.HasValue
+                                ? item.DueDate.Value.ToDateTime(TimeOnly.MaxValue)
+                                : (DateTime?)null;
+                                // Xác định quá hạn (chỉ khi trạng thái là OnLoan)
+                                var isOverdue = dueDateTime.HasValue && dueDateTime.Value < DateTime.Now && item.ReturnDate == null && item.Status == "OnLoan";
+
+                                // Xác định màu nền hàng dựa trên Status
+                                var rowClass = item.Status?.ToLower() switch
+                                {
+                                    "returned" => "table-success",
+                                    "overduereturn" => "table-secondary",
+                                    "lost" or "damaged" => "table-danger",
+                                    "onloan" when isOverdue => "table-danger",
+                                    "pendingpickup" => "table-info",
+                                    _ => ""
+                                };
+
+                                <tr class="@rowClass">
+                                    <td>
+                                        <span class="badge bg-primary">#@item.CheckoutId</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <i class="fas fa-book text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@item.Book?.Title</div>
+                                                <small class="text-muted">@item.Book?.Author?.AuthorName</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            @item.BrowseDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (item.DueDate.HasValue)
+                                        {
+                                            <small class="@(isOverdue ? "text-danger fw-bold" : "text-muted")">
+                                                <i class="fas fa-clock"></i>
+                                                @item.DueDate?.ToString("dd/MM/yyyy")
+                                                @if (isOverdue)
+                                                {
+                                                    <br><span class="badge bg-danger">Quá hạn</span>
+                                                }
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.ReturnDate.HasValue)
+                                        {
+                                            <small class="text-success">
+                                                <i class="fas fa-check"></i>
+                                                @item.ReturnDate?.ToString("dd/MM/yyyy")
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">
+                                                <i class="fas fa-hourglass-half"></i> Chưa trả
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var (statusText, statusClass, statusIcon) = GetStatusBadge(item.Status, isOverdue);
+                                        }
+                                        <span class="badge @statusClass">
+                                            <i class="@statusIcon"></i> @statusText
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="/Checkout/Details/@item.CheckoutId" class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (item.Status == "OnLoan" && isOverdue)
+                                            {
+                                                <span class="btn btn-sm btn-outline-warning" title="Sách quá hạn - Vui lòng liên hệ thư viện">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const rows = document.querySelectorAll('#checkoutTable tbody tr');
+
+            rows.forEach(row => {
+                if (row.cells.length === 1) return; // Skip empty row
+
+                const bookTitle = row.cells[1].textContent.toLowerCase();
+                const statusElement = row.cells[5].querySelector('.badge');
+
+                const statusText = statusElement ? statusElement.textContent.trim().toLowerCase() : '';
+
+                const matchesSearch = bookTitle.includes(searchTerm);
+
+                let matchesStatus = true;
+                if (statusFilter !== '') {
+                    const filterMap = {
+                        'pendingpickup': 'chờ nhận sách',
+                        'onloan': 'đang mượn',
+                        'returned': 'đã trả',
+                        'overdue': 'quá hạn',
+                        'lost': 'làm mất',
+                        'damaged': 'làm hỏng'
+                    };
+
+                    const filterText = filterMap[statusFilter];
+                    matchesStatus = statusText.includes(filterText);
+                }
+
+                row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+            });
+        }
+
+        function applyFilters() {
+            filterTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            filterTable();
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+
+        // Real-time search
+        document.getElementById('searchInput').addEventListener('input', filterTable);
+        document.getElementById('statusFilter').addEventListener('change', filterTable);
+    </script>
+}

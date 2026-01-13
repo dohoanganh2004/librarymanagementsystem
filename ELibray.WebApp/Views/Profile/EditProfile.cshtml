@@ -1,0 +1,74 @@
+﻿@* File: ~/Views/Profile/EditProfile.cshtml *@
+@using ELibrary.WebApp.DTO.Response
+@model ReaderResponseDTO
+@{
+    ViewData["Title"] = "Chỉnh sửa Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container mt-4">
+    <h2 class="mb-4">Chỉnh sửa thông tin cá nhân</h2>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@ViewBag.ErrorMessage</div>
+    }
+
+    <div class="profile-content">
+        @* ... (Profile Left) ... *@
+
+        <div class="profile-right">
+            @* FORM NÀY TRỎ ĐẾN ACTION POST MỚI UpdateProfile *@
+            <form asp-controller="Profile" asp-action="EditProfile" method="post">
+
+                @* Trường ReaderId ẩn để gửi ID người dùng cần cập nhật *@
+                <input type="hidden" name="ReaderId" value="@Model.ReaderId" />
+
+                <div class="form-group">
+                    <label for="firstName">Tên (FirstName)</label>
+                    <input type="text" class="form-control" id="firstName" name="FirstName" value="@Model.FirstName" />
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Họ (LastName)</label>
+                    <input type="text" class="form-control" id="lastName" name="LastName" value="@Model.LastName" />
+                </div>
+
+                <div class="form-group">
+                    <label for="dob">Ngày Sinh</label>
+                    <input type="date" class="form-control" id="dob" name="DoB" value="@Model.DoB?.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    @* Giữ readonly cho Email *@
+                    <input type="email" class="form-control" id="email" value="@Model.Email" readonly>
+                    <small class="form-text text-muted">Email không thể thay đổi.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" class="form-control" id="phone" name="PhoneNumber" value="@Model.PhoneNumber" />
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Địa chỉ</label>
+                    <textarea class="form-control" id="address" rows="2" name="Address">@Model.Address</textarea>
+                </div>
+
+                <hr />
+                @Html.AntiForgeryToken()
+
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+                <a asp-controller="Profile" asp-action="ReaderProfile" class="btn btn-secondary ml-2">
+                    Hủy bỏ
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")

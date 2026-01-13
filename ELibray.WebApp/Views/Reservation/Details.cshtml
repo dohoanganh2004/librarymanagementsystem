@@ -1,0 +1,80 @@
+﻿@model ELibrary.WebApp.DTO.Response.ReservationResponseDTO
+
+@{
+    ViewData["Title"] = "Chi tiết Phiếu Mượn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">📜 Chi tiết Phiếu Mượn #@Model.ReservationId</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <h5 class="text-primary border-bottom pb-2">Thông tin Độc giả</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã Độc giả:</dt>
+                        <dd class="col-sm-8">@Model.ReaderId</dd>
+
+                        <dt class="col-sm-4">Tên Độc giả:</dt>
+                        <dd class="col-sm-8">**@Model.ReaderName**</dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <h5 class="text-primary border-bottom pb-2">Thông tin Sách</h5>
+                    <dl class="row">
+                        <dt class="col-sm-4">Mã Sách:</dt>
+                        <dd class="col-sm-8">@Model.BookId</dd>
+
+                        <dt class="col-sm-4">Tên Sách:</dt>
+                        <dd class="col-sm-8">**@Model.Title**</dd>
+
+                        <dt class="col-sm-4">Số lượng:</dt>
+                        <dd class="col-sm-8">@Model.Quantity</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <hr>
+
+            <h5 class="text-primary border-bottom pb-2 mt-4">Trạng thái Phiếu Mượn</h5>
+            <dl class="row">
+                <dt class="col-sm-3">Ngày Đặt chỗ:</dt>
+                <dd class="col-sm-9">@Model.ReservationDate.ToString("dd/MM/yyyy")</dd>
+
+                <dt class="col-sm-3">Ngày Nhận dự kiến:</dt>
+                <dd class="col-sm-9">
+                    @{
+                        if (Model.PickupDate.HasValue)
+                        {
+                            <span>@Model.PickupDate.Value.ToString("dd/MM/yyyy")</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Chưa xác định</span>
+                        }
+                    }
+                </dd>
+
+                <dt class="col-sm-3">Trạng thái:</dt>
+                <dd class="col-sm-9">
+                    @Model.Status
+                        
+                    
+                </dd>
+            </dl>
+
+        </div>
+        <div class="card-footer text-muted">
+            <a asp-action="List" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại Danh sách
+            </a>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")

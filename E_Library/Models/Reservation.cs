@@ -13,9 +13,11 @@ public partial class Reservation
 
     public DateOnly ReservationDate { get; set; }
 
-    public bool? Status { get; set; }
+    public string? Status { get; set; }
 
     public DateOnly? PickupDate { get; set; }
+
+    public int Quantity { get; set; }
 
     public virtual Book Book { get; set; } = null!;
 

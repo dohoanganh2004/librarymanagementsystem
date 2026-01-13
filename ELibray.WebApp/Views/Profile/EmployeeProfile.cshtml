@@ -1,0 +1,438 @@
+@using ELibrary.WebApp.DTO.Response
+@using Microsoft.AspNetCore.Http
+@model EmployeeResponseDTO
+@{
+    ViewData["Title"] = "Hồ sơ nhân viên";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    @if (Model != null)
+    {
+        <div class="row">
+            <!-- Employee Profile -->
+            <div class="col-lg-4 mb-4">
+                <div class="sticky-top" style="top: 100px;">
+                    <!-- Profile Card -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                @if (!string.IsNullOrEmpty(Model.Avatar))
+                                {
+                                    <img src="@Model.Avatar" class="rounded-circle mb-3" width="120" height="120" alt="Avatar">
+                                }
+                                else
+                                {
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold mx-auto mb-3" style="width: 120px; height: 120px; font-size: 2.5rem;">
+                                        @(Model.FirstName?.Substring(0, 1).ToUpper())@(Model.LastName?.Substring(0, 1).ToUpper())
+                                    </div>
+                                }
+                            </div>
+                            
+                            <h3 class="fw-bold text-primary mb-2">@Model.FirstName @Model.LastName</h3>
+                            <p class="text-muted mb-2">@(Model.RoleName ?? "Nhân viên")</p>
+                            <p class="text-muted mb-3">ID: @Model.EmployeeId</p>
+                            
+                            <div class="mb-4">
+                                @if (Model.Status == true)
+                                {
+                                    <span class="badge bg-success fs-6">
+                                        <i class="fas fa-check-circle me-1"></i>Đang làm việc
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger fs-6">
+                                        <i class="fas fa-times-circle me-1"></i>Ngừng làm việc
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <a asp-controller="Profile" asp-action="EditEmployeeProfile" class="btn btn-primary">
+                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa hồ sơ
+                                </a>
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    <i class="fas fa-key me-2"></i>Đổi mật khẩu
+                                </button>
+                                <button class="btn btn-outline-info" onclick="updateAvatar()">
+                                    <i class="fas fa-camera me-2"></i>Đổi ảnh đại diện
+                                </button>
+                                <button class="btn btn-outline-success" onclick="downloadProfile()">
+                                    <i class="fas fa-download me-2"></i>Tải hồ sơ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Info -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 text-primary">
+                                <i class="fas fa-briefcase me-2"></i>Thông tin công việc
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Chức vụ</small>
+                                <strong>@(Model.RoleName ?? "Nhân viên")</strong>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Ngày bắt đầu</small>
+                                <strong>@Model.StartDate.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Thời gian làm việc</small>
+                                <strong>@((DateTime.Now.Year - Model.StartDate.Year)) năm</strong>
+                            </div>
+                            <div class="mb-0">
+                                <small class="text-muted d-block">Mã nhân viên</small>
+                                <span class="badge bg-primary">EMP@(Model.EmployeeId.ToString("D6"))</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Details -->
+            <div class="col-lg-8">
+                <!-- Personal Information -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-primary">
+                            <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="width: 40%;">Họ:</td>
+                                        <td>@Model.FirstName</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Tên:</td>
+                                        <td>@Model.LastName</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Email:</td>
+                                        <td>
+                                            <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Số điện thoại:</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                                            {
+                                                <a href="tel:@Model.PhoneNumber" class="text-decoration-none">@Model.PhoneNumber</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa cập nhật</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="width: 40%;">Ngày sinh:</td>
+                                        <td>
+                                            @if (Model.DoB.HasValue)
+                                            {
+                                                <span>@Model.DoB.Value.ToString("dd/MM/yyyy")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa cập nhật</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Tuổi:</td>
+                                        <td>
+                                            @if (Model.Age.HasValue)
+                                            {
+                                                <span>@Model.Age tuổi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa rõ</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Trạng thái:</td>
+                                        <td>
+                                            @if (Model.Status == true)
+                                            {
+                                                <span class="badge bg-success">Đang làm việc</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Ngừng làm việc</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Role ID:</td>
+                                        <td>
+                                            <span class="badge bg-info">@Model.RoleId</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity & Statistics -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="employeeTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
+                                    <i class="fas fa-chart-line me-2"></i>Hoạt động
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions" type="button" role="tab">
+                                    <i class="fas fa-shield-alt me-2"></i>Quyền hạn
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                                    <i class="fas fa-cog me-2"></i>Cài đặt
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="employeeTabsContent">
+                            <!-- Activity Tab -->
+                            <div class="tab-pane fade show active" id="activity" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="text-center p-3 border rounded">
+                                            <h4 class="text-primary mb-1">0</h4>
+                                            <small class="text-muted">Sách đã duyệt</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center p-3 border rounded">
+                                            <h4 class="text-success mb-1">0</h4>
+                                            <small class="text-muted">Phiếu mượn xử lý</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center p-3 border rounded">
+                                            <h4 class="text-info mb-1">0</h4>
+                                            <small class="text-muted">Độc giả quản lý</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Biểu đồ hoạt động sẽ hiển thị tại đây</p>
+                                </div>
+                            </div>
+
+                            <!-- Permissions Tab -->
+                            <div class="tab-pane fade" id="permissions" role="tabpanel">
+                                <div class="text-center py-4">
+                                    <i class="fas fa-shield-alt fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted mb-3">Quyền hạn của @(Model.RoleName ?? "Nhân viên")</h5>
+                                    <p class="text-muted">Danh sách quyền hạn sẽ hiển thị tại đây</p>
+                                </div>
+                            </div>
+
+                            <!-- Settings Tab -->
+                            <div class="tab-pane fade" id="settings" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold mb-3">Cài đặt thông báo</h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                            <label class="form-check-label" for="emailNotifications">
+                                                Thông báo qua email
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="systemNotifications" checked>
+                                            <label class="form-check-label" for="systemNotifications">
+                                                Thông báo hệ thống
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="smsNotifications">
+                                            <label class="form-check-label" for="smsNotifications">
+                                                Thông báo SMS
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold mb-3">Cài đặt bảo mật</h6>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                                            <label class="form-check-label" for="twoFactorAuth">
+                                                Xác thực 2 bước
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="loginAlerts" checked>
+                                            <label class="form-check-label" for="loginAlerts">
+                                                Cảnh báo đăng nhập
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="sessionTimeout" checked>
+                                            <label class="form-check-label" for="sessionTimeout">
+                                                Tự động đăng xuất
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="text-end">
+                                    <button class="btn btn-primary" onclick="saveSettings()">
+                                        <i class="fas fa-save me-2"></i>Lưu cài đặt
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Profile Not Found -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-exclamation-triangle fa-4x text-warning"></i>
+            </div>
+            <h2 class="text-muted mb-3">Không tìm thấy hồ sơ</h2>
+            <p class="text-muted mb-4">Hồ sơ nhân viên không tồn tại hoặc bạn không có quyền truy cập.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Về trang chủ
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Include Change Password Modal -->
+@await Html.PartialAsync("_ChangePasswordModal")
+@section Styles {
+    <style>
+        .table td {
+            padding: 0.75rem 0;
+            border: none;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: transparent;
+            border-bottom: 2px solid #0d6efd;
+            color: #0d6efd;
+        }
+        
+        .sticky-top {
+            position: sticky;
+        }
+        
+      
+        
+        .card-header-tabs {
+            margin-bottom: -1px;
+        }
+        
+        .badge {
+            font-size: 0.875em;
+        }
+        
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function updateAvatar() {
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Preview image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Update avatar preview
+                        const avatarImg = document.querySelector('.rounded-circle');
+                        if (avatarImg) {
+                            avatarImg.src = e.target.result;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                    
+                    // Here you would upload the file to server
+                    alert('Chức năng upload ảnh sẽ được triển khai');
+                }
+            };
+            
+            input.click();
+        }
+        
+        function downloadProfile() {
+            alert('Tải hồ sơ nhân viên');
+            // Implement download profile logic
+        }
+        
+        function saveSettings() {
+            // Get all switch states
+            const settings = {
+                emailNotifications: document.getElementById('emailNotifications').checked,
+                systemNotifications: document.getElementById('systemNotifications').checked,
+                smsNotifications: document.getElementById('smsNotifications').checked,
+                twoFactorAuth: document.getElementById('twoFactorAuth').checked,
+                loginAlerts: document.getElementById('loginAlerts').checked,
+                sessionTimeout: document.getElementById('sessionTimeout').checked
+            };
+            
+            console.log('Saving settings:', settings);
+            alert('Cài đặt đã được lưu thành công!');
+            
+            // Here you would send settings to server
+        }
+        
+        // Auto-save settings when switches change
+        document.querySelectorAll('.form-check-input').forEach(input => {
+            input.addEventListener('change', function() {
+                console.log(`${this.id} changed to: ${this.checked}`);
+                // Auto-save individual setting
+            });
+        });
+        
+        // Initialize tooltips
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+}

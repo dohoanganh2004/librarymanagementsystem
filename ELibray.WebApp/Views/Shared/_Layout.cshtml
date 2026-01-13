@@ -1,0 +1,404 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="shortcut icon" href="/img/icons/icon-48x48.png" />
+    <title>@ViewData["Title"] - ELibrary</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/css/light.css" rel="stylesheet" />
+    <link href="/css/sidebar.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        body {
+            opacity: 1;
+        }
+    </style>
+
+    @RenderSection("Styles", required: false)
+</head>
+<body data-theme="default" data-layout="fluid" data-sidebar-position="left" data-sidebar-layout="default">
+    @{
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+        var action = ViewContext.RouteData.Values["action"]?.ToString();
+        var isAuthPage = controller?.ToLower() == "auth";
+        
+        // Check if user is logged in
+        var employeeId = Context.Session.GetInt32("employeeId");
+        var readerId = Context.Session.GetInt32("readerId");
+        var isLoggedIn = employeeId.HasValue || readerId.HasValue;
+    }
+
+    @if (isAuthPage)
+    {
+        <!-- Auth pages: No sidebar/header -->
+        <main>
+            @RenderBody()
+        </main>
+    }
+    else if (isLoggedIn)
+    {
+        <!-- Logged in users: With sidebar/header -->
+        <div class="wrapper">
+            <!-- Sidebar -->
+            @await Html.PartialAsync("_Sidebar")
+
+            <!-- Main Content -->
+            <div class="main">
+                <!-- Top Navigation -->
+                @await Html.PartialAsync("_Header")
+
+                <!-- Page Content -->
+                <main class="content">
+                    <div class="container-fluid p-0">
+                        @RenderBody()
+                    </div>
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Public pages: No sidebar, simple header -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" href="/Home/Index">
+                    <i class="fas fa-book-open"></i> ELibrary
+                </a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Home/Index">Trang Chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Book/All">Danh Sách Sách</a>
+                        </li>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Auth/Login">
+                                <i class="fas fa-sign-in-alt"></i> Đăng Nhập
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Auth/Register">
+                                <i class="fas fa-user-plus"></i> Đăng Ký
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main>
+            @RenderBody()
+        </main>
+    }
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+
+    <script>
+        $(document).ready(function() {
+            // a) Khởi tạo Feather Icons
+            feather.replace();
+
+            // b) Logic Sidebar Toggle
+            $('.sidebar-toggle, .js-sidebar-toggle').on('click', function(e) {
+                e.preventDefault();
+                
+                // Toggle sidebar visibility
+                $('.sidebar').toggleClass('active');
+                
+                // Mobile overlay
+                if ($(window).width() <= 768) {
+                    if ($('.sidebar').hasClass('active')) {
+                        // Sidebar đang hiện, thêm overlay
+                        $('body').append('<div class="sidebar-overlay active"></div>');
+                    } else {
+                        // Sidebar đang ẩn, bỏ overlay
+                        $('.sidebar-overlay').remove();
+                    }
+                }
+            });
+
+            // c) Close sidebar when clicking overlay (mobile)
+            $(document).on('click', '.sidebar-overlay', function() {
+                $('.sidebar').removeClass('active'); // Ẩn sidebar
+                $('.sidebar-overlay').remove();
+            });
+
+            // d) Highlight active menu item
+            var currentPath = window.location.pathname;
+            $('.sidebar-link').each(function() {
+                var linkPath = $(this).attr('href');
+                if (linkPath && currentPath.startsWith(linkPath) && linkPath !== '/') {
+                    $(this).addClass('active');
+                }
+            });
+
+            // e) Logic Fullscreen Toggle
+            $('.js-fullscreen').on('click', function(e) {
+                if (
+                    !document.fullscreenElement &&
+                    !document.mozFullScreenElement &&
+                    !document.webkitFullscreenElement
+                ) {
+                    if (document.documentElement.requestFullscreen) {
+                        document.documentElement.requestFullscreen();
+                    } else if (document.documentElement.mozRequestFullScreen) {
+                        document.documentElement.mozRequestFullScreen();
+                    } else if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen(
+                            Element.ALLOW_KEYBOARD_INPUT
+                        );
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    }
+                }
+            });
+
+            // f) Responsive sidebar
+            $(window).resize(function() {
+                if ($(window).width() > 768) {
+                    $('.sidebar-overlay').remove();
+                }
+            });
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        // Notification management
+        let notificationCount = 0;
+        let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+
+        // Initialize notification system
+        function initializeNotifications() {
+            updateNotificationBadge();
+            loadNotificationList();
+        }
+
+        // Update notification badge
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notifyBadge');
+            if (badge) {
+                if (notificationCount > 0) {
+                    badge.textContent = notificationCount > 99 ? '99+' : notificationCount;
+                    badge.classList.remove('d-none');
+                } else {
+                    badge.classList.add('d-none');
+                }
+            }
+        }
+
+        // Add notification to list
+        function addNotificationToList(user, message, timestamp = new Date()) {
+            const notification = {
+                id: Date.now(),
+                user: user,
+                message: message,
+                timestamp: timestamp,
+                read: false
+            };
+
+            // Add to beginning of array
+            notifications.unshift(notification);
+            
+            // Keep only last 50 notifications
+            if (notifications.length > 50) {
+                notifications = notifications.slice(0, 50);
+            }
+
+            // Save to localStorage
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            
+            // Update UI
+            notificationCount++;
+            updateNotificationBadge();
+            loadNotificationList();
+        }
+
+        // Load notification list
+        function loadNotificationList() {
+            const notificationList = document.getElementById('notificationList');
+            if (!notificationList) return;
+
+            if (notifications.length === 0) {
+                notificationList.innerHTML = `
+                    <div class="list-group-item text-center py-4">
+                        <i class="fas fa-bell-slash text-muted fa-2x mb-2"></i>
+                        <div class="text-muted">Chưa có thông báo mới</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            notifications.slice(0, 10).forEach(notification => {
+                const timeAgo = getTimeAgo(new Date(notification.timestamp));
+                const readClass = notification.read ? 'opacity-75' : 'notification-unread';
+                const iconClass = getNotificationIcon(notification.user);
+                
+                html += `
+                    <div class="list-group-item list-group-item-action ${readClass}" onclick="markAsRead(${notification.id})" style="cursor: pointer;">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="${iconClass} text-white"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">${notification.user}</h6>
+                                        <p class="mb-1 text-muted small">${notification.message}</p>
+                                        <small class="text-muted notification-time">
+                                            <i class="fas fa-clock me-1"></i>${timeAgo}
+                                        </small>
+                                    </div>
+                                    ${!notification.read ? '<div class="bg-primary rounded-circle" style="width: 8px; height: 8px; margin-top: 4px;"></div>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Add "View More" if there are more than 10 notifications
+            if (notifications.length > 10) {
+                html += `
+                    <div class="list-group-item text-center">
+                        <small class="text-muted">Và ${notifications.length - 10} thông báo khác...</small>
+                    </div>
+                `;
+            }
+
+            notificationList.innerHTML = html;
+        }
+
+        // Get notification icon based on user/type
+        function getNotificationIcon(user) {
+            if (user.includes('ELibrary') || user.includes('Hệ thống')) return 'fas fa-book';
+            if (user.includes('Phiếu mượn') || user.includes('Checkout')) return 'fas fa-file-invoice';
+            if (user.includes('Đặt chỗ') || user.includes('Reservation')) return 'fas fa-bookmark';
+            if (user.includes('Quản lý')) return 'fas fa-user-shield';
+            return 'fas fa-bell';
+        }
+
+        // Mark notification as read
+        function markAsRead(notificationId) {
+            const notification = notifications.find(n => n.id === notificationId);
+            if (notification && !notification.read) {
+                notification.read = true;
+                notificationCount = Math.max(0, notificationCount - 1);
+                localStorage.setItem('notifications', JSON.stringify(notifications));
+                updateNotificationBadge();
+                loadNotificationList();
+            }
+        }
+
+        // Mark all as read
+        function markAllAsRead() {
+            notifications.forEach(n => n.read = true);
+            notificationCount = 0;
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            updateNotificationBadge();
+            loadNotificationList();
+        }
+
+        // Clear all notifications
+        function clearAllNotifications() {
+            notifications = [];
+            notificationCount = 0;
+            localStorage.removeItem('notifications');
+            updateNotificationBadge();
+            loadNotificationList();
+        }
+
+        // Get time ago string
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Vừa xong';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`;
+            return `${Math.floor(diffInSeconds / 86400)} ngày trước`;
+        }
+
+        // SignalR Connection
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/notificationHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (user, message) {
+            // Show SweetAlert toast
+            Swal.fire({
+                icon: "info",
+                title: user,
+                text: message,
+                timer: 3000,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false
+            });
+
+            // Add to notification bell
+            addNotificationToList(user, message);
+            
+            // Add bell shake animation
+            const bellIcon = document.querySelector('[data-feather="bell"]');
+            if (bellIcon) {
+                bellIcon.classList.add('bell-shake');
+                setTimeout(() => {
+                    bellIcon.classList.remove('bell-shake');
+                }, 500);
+            }
+            
+            // Add badge pulse animation
+            const badge = document.getElementById('notifyBadge');
+            if (badge && !badge.classList.contains('d-none')) {
+                badge.classList.add('badge-pulse');
+                setTimeout(() => {
+                    badge.classList.remove('badge-pulse');
+                }, 300);
+            }
+        });
+
+        connection.start().then(function () {
+            console.log('SignalR Connected');
+            initializeNotifications();
+        }).catch(err => console.error('SignalR Connection Error:', err));
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load existing notifications count
+            notificationCount = notifications.filter(n => !n.read).length;
+            initializeNotifications();
+        });
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+﻿@using ELibrary.WebApp.DTO.Response
+@model ReaderResponseDTO
+
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    .profile-container {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    .profile-left {
+        flex: 0 0 250px;
+        text-align: center;
+        border-right: 1px solid #eee;
+        padding-right: 20px;
+    }
+
+        .profile-left img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #007bff;
+            margin-bottom: 10px;
+        }
+
+    .profile-right {
+        flex-grow: 1;
+    }
+
+        .profile-right .form-group {
+            margin-bottom: 10px;
+        }
+
+        .profile-right input,
+        .profile-right textarea {
+            background-color: #f8f9fa;
+        }
+</style>
+
+<div class="container">
+    <h2>Thông tin cá nhân</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="profile-container">
+        <!-- Cột trái: ảnh và tên -->
+        <div class="profile-left">
+            <img src="@Model.Avatar" alt="Ảnh đại diện" />
+            <h4>@Model.FirstName @Model.LastName</h4>
+            <p class="text-muted">Độc giả (ID: @Model.ReaderId)</p>
+            <button class="btn btn-secondary btn-sm">Đổi ảnh</button>
+        </div>
+
+        <!-- Cột phải: chi tiết và nút -->
+        <div class="profile-right">
+            <div class="form-group">
+                <label>Tên</label>
+                <input type="text" class="form-control" value="@Model.FirstName" readonly />
+            </div>
+
+            <div class="form-group">
+                <label>Họ</label>
+                <input type="text" class="form-control" value="@Model.LastName" readonly />
+            </div>
+
+            <div class="form-group">
+                <label>Ngày sinh</label>
+                <input type="date" class="form-control" value="@Model.DoB?.ToString("yyyy-MM-dd")" readonly />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" class="form-control" value="@Model.Email" readonly />
+            </div>
+
+            <div class="form-group">
+                <label>Số điện thoại</label>
+                <input type="tel" class="form-control" value="@Model.PhoneNumber" readonly />
+            </div>
+
+            <div class="form-group">
+                <label>Địa chỉ</label>
+                <textarea class="form-control" rows="2" readonly>@Model.Address</textarea>
+            </div>
+
+            <div class="mt-3">
+                <a asp-controller="Profile" asp-action="EditProfile" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Chỉnh sửa Profile
+                </a>
+                <button type="button" class="btn btn-warning">Đổi mật khẩu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")

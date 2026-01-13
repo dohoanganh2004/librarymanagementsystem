@@ -1,0 +1,404 @@
+﻿@using ELibrary.WebApp.DTO.Response
+@model ReaderResponseDTO
+@{
+    ViewData["Title"] = $"Chi tiết - {Model?.FirstName} {Model?.LastName}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    @if (Model != null)
+    {
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Reader" asp-action="List" class="text-decoration-none">
+                        <i class="fas fa-users me-1"></i>Quản lý độc giả
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.FirstName @Model.LastName</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Reader Profile -->
+            <div class="col-lg-4 mb-4">
+                <div class="sticky-top" style="top: 100px;">
+                    <!-- Profile Card -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                @if (!string.IsNullOrEmpty(Model.Avatar))
+                                {
+                                    <img src="@Model.Avatar" class="rounded-circle mb-3" width="120" height="120" alt="Avatar">
+                                }
+                                else
+                                {
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold mx-auto mb-3" style="width: 120px; height: 120px; font-size: 2.5rem;">
+                                        @(Model.FirstName?.Substring(0, 1).ToUpper())@(Model.LastName?.Substring(0, 1).ToUpper())
+                                    </div>
+                                }
+                            </div>
+                            
+                            <h3 class="fw-bold text-primary mb-2">@Model.FirstName @Model.LastName</h3>
+                            <p class="text-muted mb-3">ID: @Model.ReaderId</p>
+                            
+                            <div class="mb-4">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-check-circle me-1"></i>Hoạt động
+                                </span>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="editReader(@Model.ReaderId)">
+                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa thông tin
+                                </button>
+                                <button class="btn btn-success" onclick="createLibraryCard(@Model.ReaderId)">
+                                    <i class="fas fa-id-card me-2"></i>Tạo thẻ thư viện
+                                </button>
+                                <button class="btn btn-info" onclick="sendNotification(@Model.ReaderId)">
+                                    <i class="fas fa-envelope me-2"></i>Gửi thông báo
+                                </button>
+                                <button class="btn btn-warning" onclick="resetPassword(@Model.ReaderId)">
+                                    <i class="fas fa-key me-2"></i>Đặt lại mật khẩu
+                                </button>
+                                <button class="btn btn-danger" onclick="lockAccount(@Model.ReaderId)">
+                                    <i class="fas fa-lock me-2"></i>Khóa tài khoản
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Stats -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 text-primary">
+                                <i class="fas fa-chart-bar me-2"></i>Thống kê nhanh
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-0">0</h4>
+                                        <small class="text-muted">Đang mượn</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border-end">
+                                        <h4 class="text-success mb-0">0</h4>
+                                        <small class="text-muted">Đã trả</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-warning mb-0">0</h4>
+                                    <small class="text-muted">Quá hạn</small>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h5 class="text-info mb-0">0</h5>
+                                        <small class="text-muted">Đặt chỗ</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="text-danger mb-0">0 VNĐ</h5>
+                                    <small class="text-muted">Phạt</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Reader Details -->
+            <div class="col-lg-8">
+                <!-- Personal Information -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-primary">
+                            <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="width: 40%;">Họ:</td>
+                                        <td>@Model.FirstName</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Tên:</td>
+                                        <td>@Model.LastName</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Email:</td>
+                                        <td>
+                                            <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Số điện thoại:</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                                            {
+                                                <a href="tel:@Model.PhoneNumber" class="text-decoration-none">@Model.PhoneNumber</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa cập nhật</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="width: 40%;">Ngày sinh:</td>
+                                        <td>
+                                            @if (Model.DoB.HasValue)
+                                            {
+                                                <span>@Model.DoB.Value.ToString("dd/MM/yyyy")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa cập nhật</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Tuổi:</td>
+                                        <td>
+                                            @if (Model.Age.HasValue)
+                                            {
+                                                <span>@Model.Age tuổi</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa rõ</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Địa chỉ:</td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(Model.Address))
+                                            {
+                                                <span>@Model.Address</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Chưa cập nhật</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Mã độc giả:</td>
+                                        <td>
+                                            <span class="badge bg-primary">RD@(Model.ReaderId.ToString("D6"))</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="readerTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="borrowing-tab" data-bs-toggle="tab" data-bs-target="#borrowing" type="button" role="tab">
+                                    <i class="fas fa-book-reader me-2"></i>Lịch sử mượn
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="reservations-tab" data-bs-toggle="tab" data-bs-target="#reservations" type="button" role="tab">
+                                    <i class="fas fa-bookmark me-2"></i>Đặt chỗ
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="fines-tab" data-bs-toggle="tab" data-bs-target="#fines" type="button" role="tab">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Phạt
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cards-tab" data-bs-toggle="tab" data-bs-target="#cards" type="button" role="tab">
+                                    <i class="fas fa-id-card me-2"></i>Thẻ thư viện
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="readerTabsContent">
+                            <!-- Borrowing History Tab -->
+                            <div class="tab-pane fade show active" id="borrowing" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Lịch sử mượn sách</h6>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="refreshBorrowingHistory()">
+                                        <i class="fas fa-refresh me-1"></i>Làm mới
+                                    </button>
+                                </div>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-book-reader fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Chưa có lịch sử mượn sách</p>
+                                </div>
+                            </div>
+
+                            <!-- Reservations Tab -->
+                            <div class="tab-pane fade" id="reservations" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Danh sách đặt chỗ</h6>
+                                    <button class="btn btn-sm btn-outline-success" onclick="createReservation()">
+                                        <i class="fas fa-plus me-1"></i>Tạo đặt chỗ
+                                    </button>
+                                </div>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Chưa có đặt chỗ nào</p>
+                                </div>
+                            </div>
+
+                            <!-- Fines Tab -->
+                            <div class="tab-pane fade" id="fines" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Danh sách phạt</h6>
+                                    <div>
+                                        <span class="badge bg-danger me-2">Tổng: 0 VNĐ</span>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="addFine()">
+                                            <i class="fas fa-plus me-1"></i>Thêm phạt
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <p class="text-muted">Không có khoản phạt nào</p>
+                                </div>
+                            </div>
+
+                            <!-- Library Cards Tab -->
+                            <div class="tab-pane fade" id="cards" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Thẻ thư viện</h6>
+                                    <button class="btn btn-sm btn-outline-success" onclick="createLibraryCard(@Model.ReaderId)">
+                                        <i class="fas fa-plus me-1"></i>Tạo thẻ mới
+                                    </button>
+                                </div>
+                                <div class="text-center py-4">
+                                    <i class="fas fa-id-card fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Chưa có thẻ thư viện</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Reader Not Found -->
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-exclamation-triangle fa-4x text-warning"></i>
+            </div>
+            <h2 class="text-muted mb-3">Không tìm thấy độc giả</h2>
+            <p class="text-muted mb-4">Độc giả bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+            <a asp-controller="Reader" asp-action="List" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+            </a>
+        </div>
+    }
+</div>
+@section Styles {
+    <style>
+        .table td {
+            padding: 0.75rem 0;
+            border: none;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: transparent;
+            border-bottom: 2px solid #0d6efd;
+            color: #0d6efd;
+        }
+        
+        .sticky-top {
+            position: sticky;
+        }
+        
+      
+        
+        .card-header-tabs {
+            margin-bottom: -1px;
+        }
+        
+        .badge {
+            font-size: 0.875em;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        function editReader(readerId) {
+            alert('Chỉnh sửa thông tin độc giả ID: ' + readerId);
+            // Implement edit logic
+        }
+        
+        function createLibraryCard(readerId) {
+            alert('Tạo thẻ thư viện cho độc giả ID: ' + readerId);
+            // Implement library card creation
+        }
+        
+        function sendNotification(readerId) {
+            alert('Gửi thông báo cho độc giả ID: ' + readerId);
+            // Implement notification sending
+        }
+        
+        function resetPassword(readerId) {
+            if (confirm('Bạn có chắc chắn muốn đặt lại mật khẩu cho độc giả này?')) {
+                alert('Đặt lại mật khẩu cho độc giả ID: ' + readerId);
+                // Implement password reset
+            }
+        }
+        
+        function lockAccount(readerId) {
+            if (confirm('Bạn có chắc chắn muốn khóa tài khoản này?')) {
+                alert('Khóa tài khoản độc giả ID: ' + readerId);
+                // Implement account locking
+            }
+        }
+        
+        function refreshBorrowingHistory() {
+            alert('Làm mới lịch sử mượn sách');
+            // Implement refresh logic
+        }
+        
+        function createReservation() {
+            alert('Tạo đặt chỗ mới');
+            // Implement reservation creation
+        }
+        
+        function addFine() {
+            alert('Thêm khoản phạt');
+            // Implement fine addition
+        }
+        
+        // Auto-refresh data every 30 seconds
+        setInterval(function() {
+            // Refresh statistics or other dynamic data
+            console.log('Auto-refreshing reader data...');
+        }, 30000);
+    </script>
+}

@@ -1,0 +1,258 @@
+@using E_Library.Models
+@{
+    ViewData["Title"] = "Quản Lý Phân Quyền";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    var roles = ViewBag.Roles as List<Role>;
+    var permissions = ViewBag.Permissions as Dictionary<int, List<Permission>>;
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary mb-1">
+                <i class="fas fa-shield-alt"></i> Quản Lý Phân Quyền Nâng Cao
+            </h2>
+            <p class="text-muted mb-0">Quản lý quyền truy cập chi tiết cho từng vai trò</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Permission/Matrix" class="btn btn-outline-primary">
+                <i class="fas fa-table"></i> Ma trận quyền
+            </a>
+            <button class="btn btn-outline-success" onclick="exportPermissions()">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Permission Overview Cards -->
+    <div class="row mb-4">
+        @if (roles != null)
+        {
+            @foreach (var role in roles)
+            {
+                var rolePerms = permissions?.ContainsKey(role.RoleId) == true ? permissions[role.RoleId] : new List<Permission>();
+                var cardColor = role.RoleName switch
+                {
+                    "Admin" => "bg-danger",
+                    "Librarian" => "bg-warning",
+                    "Employee" => "bg-info",
+                    _ => "bg-secondary"
+                };
+
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-header @cardColor text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-tag"></i> @role.RoleName
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted">Tổng quyền:</span>
+                                <span class="badge bg-primary fs-6">@rolePerms.Count</span>
+                            </div>
+                            
+                            <div class="permission-list" style="max-height: 200px; overflow-y: auto;">
+                                @if (rolePerms.Any())
+                                {
+                                    @foreach (var perm in rolePerms.Take(5))
+                                    {
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            <small class="text-truncate">@perm.Description</small>
+                                        </div>
+                                    }
+                                    @if (rolePerms.Count > 5)
+                                    {
+                                        <div class="text-center">
+                                            <small class="text-muted">và @(rolePerms.Count - 5) quyền khác...</small>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-ban"></i>
+                                        <div>Chưa có quyền nào</div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-sm btn-outline-primary w-100" onclick="viewRoleDetails(@role.RoleId, '@role.RoleName')">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Permission Testing Tool -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-tools"></i> Công Cụ Kiểm Tra Quyền
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Chọn vai trò:</label>
+                    <select id="testRoleId" class="form-select">
+                        <option value="">-- Chọn vai trò --</option>
+                        @if (roles != null)
+                        {
+                            @foreach (var role in roles)
+                            {
+                                <option value="@role.RoleId">@role.RoleName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">URL cần kiểm tra:</label>
+                    <input type="text" id="testUrl" class="form-control" placeholder="/Book/Create">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="testPermission()">
+                        <i class="fas fa-search"></i> Kiểm tra quyền
+                    </button>
+                </div>
+            </div>
+            <div id="testResult" class="mt-3" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Detailed Permissions Table -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> Chi Tiết Phân Quyền
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Vai trò</th>
+                            <th>Số lượng quyền</th>
+                            <th>Quyền chính</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (roles != null)
+                        {
+                            @foreach (var role in roles)
+                            {
+                                var rolePerms = permissions?.ContainsKey(role.RoleId) == true ? permissions[role.RoleId] : new List<Permission>();
+                                
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-tag text-primary me-2"></i>
+                                            <div>
+                                                <div class="fw-bold">@role.RoleName</div>
+                                                <small class="text-muted">ID: @role.RoleId</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@rolePerms.Count quyền</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach (var perm in rolePerms.Take(3))
+                                            {
+                                                <span class="badge bg-secondary small">@perm.Description</span>
+                                            }
+                                            @if (rolePerms.Count > 3)
+                                            {
+                                                <span class="badge bg-light text-dark small">+@(rolePerms.Count - 3)</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewRoleDetails(@role.RoleId, '@role.RoleName')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning" onclick="editRolePermissions(@role.RoleId, '@role.RoleName')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        function viewRoleDetails(roleId, roleName) {
+            // Show detailed permissions for a role
+            alert(`Xem chi tiết quyền cho vai trò: ${roleName} (ID: ${roleId})`);
+            // You can implement a modal or redirect to detailed view
+        }
+
+        function editRolePermissions(roleId, roleName) {
+            // Edit permissions for a role
+            alert(`Chỉnh sửa quyền cho vai trò: ${roleName} (ID: ${roleId})`);
+            // Redirect to permission matrix or edit form
+            window.location.href = `/Permission/Matrix?roleId=${roleId}`;
+        }
+
+        async function testPermission() {
+            const roleId = document.getElementById('testRoleId').value;
+            const url = document.getElementById('testUrl').value;
+            
+            if (!roleId || !url) {
+                alert('Vui lòng chọn vai trò và nhập URL');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Permission/Check?roleId=${roleId}&url=${encodeURIComponent(url)}`);
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('testResult');
+                const hasPermission = result.hasPermission;
+                
+                resultDiv.innerHTML = `
+                    <div class="alert ${hasPermission ? 'alert-success' : 'alert-danger'}">
+                        <h6><i class="fas ${hasPermission ? 'fa-check-circle' : 'fa-times-circle'}"></i> 
+                            Kết quả kiểm tra quyền</h6>
+                        <p><strong>URL:</strong> ${url}</p>
+                        <p><strong>Trạng thái:</strong> ${hasPermission ? 'Có quyền truy cập' : 'Không có quyền truy cập'}</p>
+                        ${result.allowedUrls && result.allowedUrls.length > 0 ? 
+                            `<p><strong>Các URL được phép:</strong><br>${result.allowedUrls.join('<br>')}</p>` : 
+                            '<p><strong>Không có URL nào được phép truy cập</strong></p>'
+                        }
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error testing permission:', error);
+                alert('Có lỗi xảy ra khi kiểm tra quyền');
+            }
+        }
+
+        function exportPermissions() {
+            // Export permissions to Excel
+            alert('Xuất danh sách phân quyền ra Excel');
+        }
+    </script>
+}

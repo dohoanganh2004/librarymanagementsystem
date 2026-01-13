@@ -1,0 +1,569 @@
+﻿@using E_Library.Models
+@using ELibrary.WebApp.Helpers
+@inject E_Library.Models.ElibraryContext DbContext
+@model IEnumerable<Checkout>
+
+@{
+    ViewData["Title"] = "Quản Lý Mượn Sách";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Lấy thông tin người dùng và vai trò
+    var employeeId = Context.Session.GetInt32("employeeId");
+    var userRole = employeeId.HasValue ? await RoleHelper.GetUserRoleAsync(Context, DbContext) : null;
+
+    var isAdmin = RoleHelper.IsAdmin(userRole);
+    var isLibrarian = RoleHelper.IsLibrarian(userRole);
+    var canManageCheckouts = RoleHelper.CanManageCheckouts(userRole);
+}
+
+@functions {
+    // Hàm Helper để trả về Text, Class CSS và ICON tương ứng với trạng thái
+    public (string text, string css, string icon) GetStatusBadge(string status, bool isOverdue)
+    {
+        return status?.ToLower() switch
+        {
+            "pendingpickup" => ("Chờ nhận sách", "bg-info", "fas fa-hourglass-start"),
+            "onloan" when isOverdue => ("Quá hạn", "bg-danger", "fas fa-calendar-times"),
+            "onloan" => ("Đang mượn", "bg-warning", "fas fa-book-reader"),
+            "returned" => ("Đã trả", "bg-success", "fas fa-check-circle"),
+            "overduereturn" => ("Trả trễ", "bg-warning text-dark", "fas fa-history"),
+            "lost" => ("Làm mất", "bg-dark", "fas fa-ban"),
+            "damaged" => ("Làm hỏng", "bg-secondary", "fas fa-exclamation-triangle"),
+            _ => ("Không rõ", "bg-light text-dark", "fas fa-question-circle")
+        };
+    }
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary mb-1">
+                <i class="fas fa-book-reader"></i> Quản Lý Mượn Sách
+            </h2>
+            <p class="text-muted mb-0">Theo dõi và quản lý tình trạng mượn sách của độc giả</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-success btn-sm" onclick="exportCheckouts()">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+            <button class="btn btn-outline-info btn-sm" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Làm mới
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-book-open fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count()</h4>
+                    <small>Tổng số phiếu mượn</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(c => c.Status == "OnLoan" || c.Status == "PendingPickup")</h4>
+                    <small>Đang mượn (Gồm chờ nhận)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <h4 class="mb-1">@Model.Count(c => c.Status == "Returned" || c.Status == "OverdueReturn")</h4>
+                    <small>Đã trả</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    @{
+                        // Lấy số lượng phiếu đang mượn và quá hạn (chưa trả)
+                        var overdueCount = Model.Count(c =>
+                        c.DueDate.HasValue &&
+                        c.DueDate.Value.ToDateTime(TimeOnly.MaxValue) < DateTime.Now &&
+                        (c.Status == "OnLoan" || c.Status == "Overdue")
+                        );
+                    }
+                    <h4 class="mb-1">@overdueCount</h4>
+                    <small>Quá hạn</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Tìm kiếm:</label>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Tên sách, độc giả...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Trạng thái:</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="pendingpickup">Chờ nhận sách</option>
+                        <option value="onloan">Đang mượn</option>
+                        <option value="returned">Đã trả</option>
+                        <option value="overdue">Quá hạn</option>
+                        <option value="lost">Làm mất</option>
+                        <option value="damaged">Làm hỏng</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Từ ngày:</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold">Đến ngày:</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary me-2" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> Lọc
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list"></i> Danh Sách Mượn Sách
+                </h5>
+                @if (canManageCheckouts)
+                {
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-primary" onclick="bulkAction('earned')" disabled id="bulkApprove" title="Chuyển sang Đang mượn (khi độc giả đến nhận)">
+                            <i class="fas fa-check"></i> Duyệt/Nhận
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="bulkAction('return')" disabled id="bulkReturn" title="Đánh dấu đã trả">
+                            <i class="fas fa-undo"></i> Trả sách
+                        </button>
+                        <div class="btn-group" role="group">
+                            <button id="dropdownStatus" type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                <i class="fas fa-ellipsis-v"></i> Khác
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownStatus">
+                                <li><a class="dropdown-item" href="#" onclick="bulkAction('lost')"><i class="fas fa-times-circle text-danger"></i> Đánh dấu mất</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="bulkAction('damaged')"><i class="fas fa-tools text-secondary"></i> Đánh dấu hỏng</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="checkoutTable">
+                    <thead class="table-dark">
+                        <tr>
+                            @if (canManageCheckouts)
+                            {
+                                <th width="40">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </th>
+                            }
+                            <th width="80">ID</th>
+                            <th>Sách</th>
+                            <th>Độc giả</th>
+                            <th width="120">Ngày mượn</th>
+                            <th width="120">Hạn trả</th>
+                            <th width="120">Ngày trả</th>
+                            <th width="120">Trạng thái</th>
+                            <th width="120">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var item in Model)
+                            {
+                                // Lấy DueDate dưới dạng DateTime để so sánh
+                                var dueDateTime = item.DueDate.HasValue
+                                ? item.DueDate.Value.ToDateTime(TimeOnly.MaxValue)
+                                : (DateTime?)null;
+                                // Xác định quá hạn (chỉ khi trạng thái là OnLoan)
+                                var isOverdue = dueDateTime.HasValue && dueDateTime.Value < DateTime.Now && item.ReturnDate == null && item.Status == "OnLoan";
+
+                                // Xác định màu nền hàng dựa trên Status
+                                var rowClass = item.Status?.ToLower() switch
+                                {
+                                    "returned" => "table-success",
+                                    "overduereturn" => "table-secondary",
+                                    "lost" or "damaged" => "table-danger",
+                                    "onloan" when isOverdue => "table-danger",
+                                    "pendingpickup" => "table-info",
+                                    _ => ""
+                                };
+
+                                <tr class="@rowClass">
+                                    @if (canManageCheckouts)
+                                    {
+                                        <td>
+                                            <input type="checkbox" class="form-check-input checkout-checkbox" value="@item.CheckoutId" data-status="@item.Status?.ToLower()">
+                                        </td>
+                                    }
+                                    <td>
+                                        <span class="badge bg-primary">#@item.CheckoutId</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <i class="fas fa-book text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@item.Book?.Title</div>
+                                                <small class="text-muted">@item.Book?.Author?.AuthorName</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-2">
+                                                <i class="fas fa-user text-info"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@item.Reader?.FirstName @item.Reader?.LastName</div>
+                                                <small class="text-muted">@item.Reader?.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            @item.BrowseDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if (item.DueDate.HasValue)
+                                        {
+                                            <small class="@(isOverdue ? "text-danger fw-bold" : "text-muted")">
+                                                <i class="fas fa-clock"></i>
+                                                @item.DueDate?.ToString("dd/MM/yyyy")
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.ReturnDate.HasValue)
+                                        {
+                                            <small class="text-success">
+                                                <i class="fas fa-check"></i>
+                                                @item.ReturnDate?.ToString("dd/MM/yyyy")
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">
+                                                <i class="fas fa-hourglass-half"></i> Chưa trả
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            // HIỂN THỊ TRẠNG THÁI CÓ ICON
+                                            var (statusText, statusClass, statusIcon) = GetStatusBadge(item.Status, isOverdue);
+                                        }
+                                        <span class="badge @statusClass">
+                                            <i class="@statusIcon"></i> @statusText
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="/Checkout/Details/@item.CheckoutId" class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (canManageCheckouts)
+                                            {
+                                                @* Nút Duyệt chỉ hiển thị nếu đang chờ nhận *@
+                                                @if (item.Status == "PendingPickup")
+                                                {
+                                                    <button class="btn btn-sm btn-outline-primary" onclick="changeSingleStatus(@item.CheckoutId, 'earned')" title="Duyệt/Chuyển sang Đang mượn">
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </button>
+                                                }
+                                                
+                                                @* Nút Trả sách chỉ hiển thị nếu đang mượn hoặc chờ nhận *@
+                                                @if (item.Status == "OnLoan" || item.Status == "PendingPickup")
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success" onclick="returnBook(@item.CheckoutId)" title="Trả sách">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                }
+
+                                                @* Dropdown cho các hành động khác (Lost/Damaged) - chỉ hiển thị nếu chưa trả *@
+                                                @if (item.Status != "Returned" && item.Status != "OverdueReturn" && item.Status != "Lost" && item.Status != "Damaged")
+                                                {
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Hành động khác">
+                                                            <i class="fas fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <a class="dropdown-item text-danger" href="#" onclick="changeSingleStatus(@item.CheckoutId, 'lost')">
+                                                                    <i class="fas fa-times-circle"></i> Đánh dấu mất
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item text-warning" href="#" onclick="changeSingleStatus(@item.CheckoutId, 'damaged')">
+                                                                    <i class="fas fa-tools"></i> Đánh dấu hỏng
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <div>Không có phiếu mượn nào</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_Footer")
+
+@section Scripts {
+    <script>
+        // Select all functionality
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.checkout-checkbox');
+            checkboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkButtons();
+        });
+
+        // Individual checkbox change
+        document.querySelectorAll('.checkout-checkbox').forEach(cb => {
+            cb.addEventListener('change', updateBulkButtons);
+        });
+
+        function updateBulkButtons() {
+            const selected = document.querySelectorAll('.checkout-checkbox:checked');
+
+            // Lấy trạng thái của các mục đã chọn
+            const selectedStatuses = new Set(Array.from(selected).map(cb => cb.getAttribute('data-status')));
+
+            const bulkApproveBtn = document.getElementById('bulkApprove');
+            const bulkReturnBtn = document.getElementById('bulkReturn');
+            const dropdownStatusBtn = document.getElementById('dropdownStatus');
+
+            if (selected.length === 0) {
+                bulkApproveBtn.disabled = true;
+                bulkReturnBtn.disabled = true;
+                dropdownStatusBtn.disabled = true;
+                return;
+            }
+
+            // Duyệt chỉ khi tất cả là 'pendingpickup'
+            const canApprove = selectedStatuses.size === 1 && selectedStatuses.has('pendingpickup');
+            bulkApproveBtn.disabled = !canApprove;
+
+            // Trả sách chỉ khi tất cả là 'onloan' hoặc 'pendingpickup'
+            const canReturn = Array.from(selectedStatuses).every(s => s === 'onloan' || s === 'pendingpickup');
+            bulkReturnBtn.disabled = !canReturn;
+
+            // Các hành động khác (Lost/Damaged) áp dụng nếu chưa trả
+            const canOtherAction = Array.from(selectedStatuses).every(s => s !== 'returned' && s !== 'overduereturn');
+            dropdownStatusBtn.disabled = !canOtherAction;
+        }
+
+
+        // Hàm chung để gửi yêu cầu thay đổi trạng thái
+        function sendChangeStatusRequest(ids, actionType, isBulk = false) {
+            const actionTextMap = {
+                'earned': 'duyệt và chuyển sang Đang mượn',
+                'return': 'trả sách',
+                'lost': 'đánh dấu mất',
+                'damaged': 'đánh dấu hỏng'
+            };
+            const actionText = actionTextMap[actionType] || actionType;
+
+            if (isBulk) {
+                // Bulk action - POST với form data
+                const formData = new FormData();
+                formData.append('ids', ids.join(','));
+                formData.append('actionType', actionType);
+
+                fetch('/Checkout/ChangeStatusBulk', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert(`Đã ${actionText} ${ids.length} phiếu mượn thành công.`);
+                        location.reload();
+                    } else {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`Lỗi: Không thể ${actionText} phiếu mượn.\nChi tiết: ${error.message}`);
+                });
+            } else {
+                // Single action - POST với form data
+                const formData = new FormData();
+                formData.append('id', ids);
+                formData.append('actionType', actionType);
+
+                fetch('/Checkout/ChangeStatus', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert(`Đã ${actionText} phiếu mượn #${ids} thành công.`);
+                        location.reload();
+                    } else {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`Lỗi: Không thể ${actionText} phiếu mượn.\nChi tiết: ${error.message}`);
+                });
+            }
+        }
+
+        // --- Single Actions ---
+        function changeSingleStatus(checkoutId, actionType) {
+            const actionTextMap = {
+                'earned': 'duyệt và chuyển sang Đang mượn',
+                'return': 'trả sách'
+            };
+            const actionText = actionTextMap[actionType] || actionType;
+
+            if (confirm(`Bạn có chắc chắn muốn ${actionText} phiếu mượn #${checkoutId}?`)) {
+                sendChangeStatusRequest(checkoutId, actionType, false);
+            }
+        }
+
+        function returnBook(checkoutId) {
+            changeSingleStatus(checkoutId, 'return');
+        }
+
+
+        // --- Bulk Actions ---
+        function bulkAction(actionType) {
+            const selected = document.querySelectorAll('.checkout-checkbox:checked');
+            if (selected.length === 0) {
+                alert('Vui lòng chọn ít nhất một phiếu mượn');
+                return;
+            }
+
+            const ids = Array.from(selected).map(cb => cb.value);
+            const actionTextMap = {
+                'earned': 'duyệt và chuyển sang Đang mượn',
+                'return': 'trả sách',
+                'lost': 'đánh dấu mất',
+                'damaged': 'đánh dấu hỏng'
+            };
+            const actionText = actionTextMap[actionType] || actionType;
+
+            if (confirm(`Bạn có chắc chắn muốn ${actionText} ${ids.length} phiếu mượn đã chọn?`)) {
+                sendChangeStatusRequest(ids, actionType, true);
+            }
+        }
+
+
+        // --- Filter/Other Functions ---
+
+        function filterTable() {
+            // Logic lọc dựa trên Status và Search tương tự code cũ
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            const rows = document.querySelectorAll('#checkoutTable tbody tr');
+
+            rows.forEach(row => {
+                if (row.cells.length === 1) return; // Skip empty row
+
+                const bookTitle = row.cells[2].textContent.toLowerCase();
+                const readerName = row.cells[3].textContent.toLowerCase();
+                const statusElement = row.cells[7].querySelector('.badge');
+
+                // Lấy trạng thái hiển thị
+                const statusText = statusElement ? statusElement.textContent.trim().toLowerCase() : '';
+
+                const matchesSearch = bookTitle.includes(searchTerm) || readerName.includes(searchTerm);
+
+                let matchesStatus = true;
+                if (statusFilter !== '') {
+                    // Ánh xạ filter value sang text hiển thị
+                    const filterMap = {
+                        'pendingpickup': 'chờ nhận sách',
+                        'onloan': 'đang mượn',
+                        'returned': 'đã trả',
+                        'overdue': 'quá hạn', 
+                        'lost': 'làm mất',
+                        'damaged': 'làm hỏng'
+                    };
+
+                    const filterText = filterMap[statusFilter];
+
+                    // Lọc theo nội dung text trạng thái hiển thị
+                    matchesStatus = statusText.includes(filterText);
+                }
+
+                // Lọc theo ngày (chưa triển khai chi tiết ở đây)
+
+                row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+            });
+        }
+
+        function applyFilters() {
+            filterTable();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = '';
+            filterTable();
+        }
+
+        function exportCheckouts() {
+            alert('Xuất danh sách mượn sách ra Excel (Cần triển khai API)');
+        }
+
+        function refreshData() {
+            location.reload();
+        }
+
+        document.addEventListener('DOMContentLoaded', updateBulkButtons);
+    </script>
+}

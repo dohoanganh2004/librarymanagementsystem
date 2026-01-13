@@ -1,0 +1,330 @@
+@model ELibrary.WebApp.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard Thống kê";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Dashboard Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">📊 Dashboard Thống kê</h1>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary" onclick="refreshDashboard()">
+            <i class="fas fa-sync-alt"></i> Làm mới
+        </button>
+        <button type="button" class="btn btn-outline-success" onclick="exportReport()">
+            <i class="fas fa-download"></i> Xuất báo cáo
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng số sách</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalBooks.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-book fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Tổng độc giả</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalReaders.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Đang mượn</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ActiveCheckouts.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Quá hạn</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.OverdueBooks.ToString("N0")</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <!-- Checkout Trend Chart -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Xu hướng mượn sách</h6>
+                <div class="dropdown no-arrow">
+                    <select class="form-select form-select-sm" onchange="updateCheckoutChart(this.value)">
+                        <option value="month">Theo tháng</option>
+                        <option value="week">Theo tuần</option>
+                        <option value="day">Theo ngày</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="checkoutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Pie Chart -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Sách theo danh mục</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Books and Registration Trend -->
+<div class="row">
+    <!-- Top Books -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Top sách được mượn nhiều nhất</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.TopBooks.Any())
+                {
+                    @foreach (var book in Model.TopBooks)
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="@book.Image" alt="@book.Title" class="rounded me-3" style="width: 50px; height: 60px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">@book.Title</h6>
+                                <small class="text-muted">@book.Author - @book.Category</small>
+                                <div class="progress mt-1" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: @((double)book.BorrowCount / Model.TopBooks.Max(b => b.BorrowCount) * 100)%"></div>
+                                </div>
+                            </div>
+                            <span class="badge bg-primary">@book.BorrowCount</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">Chưa có dữ liệu mượn sách</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Trend -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Xu hướng đăng ký</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-bar">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // Chart configurations
+        const chartColors = {
+            primary: '#4e73df',
+            success: '#1cc88a',
+            info: '#36b9cc',
+            warning: '#f6c23e',
+            danger: '#e74a3b'
+        };
+
+        // Checkout Trend Chart
+        const checkoutCtx = document.getElementById('checkoutChart').getContext('2d');
+        let checkoutChart = new Chart(checkoutCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.CheckoutTrend.Select(c => c.Label))),
+                datasets: [{
+                    label: 'Số lượt mượn',
+                    data: @Html.Raw(Json.Serialize(Model.CheckoutTrend.Select(c => c.Value))),
+                    borderColor: chartColors.primary,
+                    backgroundColor: chartColors.primary + '20',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Category Pie Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.CategoryName))),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.CategoryStats.Select(c => c.BookCount))),
+                    backgroundColor: [
+                        chartColors.primary,
+                        chartColors.success,
+                        chartColors.info,
+                        chartColors.warning,
+                        chartColors.danger,
+                        '#858796',
+                        '#5a5c69'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Registration Chart
+        const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+        const registrationChart = new Chart(registrationCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.RegistrationTrend.Select(r => r.Label))),
+                datasets: [{
+                    label: 'Đăng ký mới',
+                    data: @Html.Raw(Json.Serialize(Model.RegistrationTrend.Select(r => r.Value))),
+                    backgroundColor: chartColors.success,
+                    borderColor: chartColors.success,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Functions
+        function updateCheckoutChart(period) {
+            fetch(`/Statistics/GetChartData?type=checkout&period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    checkoutChart.data.labels = data.labels;
+                    checkoutChart.data.datasets[0].data = data.data;
+                    checkoutChart.update();
+                });
+        }
+
+        function refreshDashboard() {
+            location.reload();
+        }
+
+        function exportReport() {
+            window.open('/Statistics/ExportReport?type=dashboard&period=month', '_blank');
+        }
+
+        // Auto refresh every 5 minutes
+        setInterval(function() {
+            updateCheckoutChart('month');
+        }, 300000);
+    </script>
+}
+
+@section Styles {
+    <style>
+        .border-left-primary {
+            border-left: 0.25rem solid #4e73df !important;
+        }
+        .border-left-success {
+            border-left: 0.25rem solid #1cc88a !important;
+        }
+        .border-left-info {
+            border-left: 0.25rem solid #36b9cc !important;
+        }
+        .border-left-warning {
+            border-left: 0.25rem solid #f6c23e !important;
+        }
+        .chart-area {
+            position: relative;
+            height: 320px;
+        }
+        .chart-pie {
+            position: relative;
+            height: 245px;
+        }
+        .chart-bar {
+            position: relative;
+            height: 245px;
+        }
+    </style>
+}
